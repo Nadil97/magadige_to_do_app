@@ -46,186 +46,199 @@ class _LoginViewState extends ConsumerState<LoginView> with SingleTickerProvider
     }
   }
 
+  Widget _build3DTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData prefixIcon,
+    bool obscureText = false,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.lightBg,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(4, 4)),
+          BoxShadow(color: Colors.white, blurRadius: 10, offset: Offset(-4, -4)),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        obscureText: obscureText,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          labelText: labelText,
+          prefixIcon: Icon(prefixIcon, color: AppTheme.colorPrimary),
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          filled: false,
+        ),
+        validator: validator,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
 
-    // Listen to error state
     ref.listen<AsyncValue<void>>(authControllerProvider, (previous, next) {
       if (next is AsyncError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error.toString()),
-            backgroundColor: AppTheme.accentPink,
+            backgroundColor: AppTheme.textHard,
           ),
         );
       }
     });
 
     return Scaffold(
-      body: Stack(
-        children: [
-          // Background glow
-          Positioned(
-            top: -100,
-            right: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.accentCyan.withOpacity(0.15),
-                    blurRadius: 100,
-                    spreadRadius: 50,
+      backgroundColor: AppTheme.lightBg,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(32.0),
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Logo/Header
+                  Container(
+                    width: 100,
+                    height: 100,
+                    margin: const EdgeInsets.symmetric(horizontal: 100),
+                    decoration: BoxDecoration(
+                      color: AppTheme.lightBg,
+                      shape: BoxShape.circle,
+                      boxShadow: const [
+                        BoxShadow(color: Colors.black12, blurRadius: 15, offset: Offset(8, 8)),
+                        BoxShadow(color: Colors.white, blurRadius: 15, offset: Offset(-8, -8)),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.flag_rounded,
+                      size: 48,
+                      color: AppTheme.colorPrimary,
+                    ),
                   ),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -80,
-            left: -80,
-            child: Container(
-              width: 250,
-              height: 250,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.accentPurple.withOpacity(0.15),
-                    blurRadius: 80,
-                    spreadRadius: 40,
+                  const SizedBox(height: 32),
+                  Text(
+                    'ROADMAP PLANNER',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontSize: 28,
+                      letterSpacing: 2,
+                      color: AppTheme.colorPrimary,
+                    ),
                   ),
-                ],
-              ),
-            ),
-          ),
-          
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Logo/Header
-                      Icon(
-                        Icons.insights_rounded,
-                        size: 80,
-                        color: AppTheme.accentCyan,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'MAGADIGE TO-DO',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontSize: 32,
-                          letterSpacing: 2,
-                          color: AppTheme.accentCyan,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Climb your goals step by step',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white38,
-                        ),
-                      ),
-                      const SizedBox(height: 48),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Climb your goals step by step',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.black54,
+                    ),
+                  ),
+                  const SizedBox(height: 48),
 
-                      // Form
-                      Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            TextFormField(
-                              controller: _emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              decoration: const InputDecoration(
-                                labelText: 'Email',
-                                prefixIcon: Icon(Icons.email_outlined, color: AppTheme.accentCyan),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty || !value.contains('@')) {
-                                  return 'Enter a valid email address';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _passwordController,
-                              obscureText: true,
-                              decoration: const InputDecoration(
-                                labelText: 'Password',
-                                prefixIcon: Icon(Icons.lock_outline, color: AppTheme.accentCyan),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.length < 6) {
-                                  return 'Password must be at least 6 characters';
-                                }
-                                return null;
-                              },
-                            ),
-                          ],
+                  // Form
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        _build3DTextField(
+                          controller: _emailController,
+                          labelText: 'Email',
+                          prefixIcon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            if (value == null || value.isEmpty || !value.contains('@')) {
+                              return 'Enter a valid email address';
+                            }
+                            return null;
+                          },
                         ),
-                      ),
-                      const SizedBox(height: 24),
+                        const SizedBox(height: 24),
+                        _build3DTextField(
+                          controller: _passwordController,
+                          labelText: 'Password',
+                          prefixIcon: Icons.lock_outline,
+                          obscureText: true,
+                          validator: (value) {
+                            if (value == null || value.length < 6) {
+                              return 'Password must be at least 6 characters';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 48),
 
-                      // Actions
-                      ElevatedButton(
-                        onPressed: authState.isLoading ? null : _submit,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                        child: authState.isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation(AppTheme.darkBg),
-                                ),
-                              )
-                            : const Text('LOG IN'),
+                  // Actions
+                  GestureDetector(
+                    onTap: authState.isLoading ? null : _submit,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 100),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.colorPrimary,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: authState.isLoading ? [] : [
+                          BoxShadow(color: AppTheme.colorPrimary.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 6)),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const SignupView()),
-                          );
-                        },
-                        child: RichText(
-                          text: const TextSpan(
-                            text: "Don't have an account? ",
-                            style: TextStyle(color: Colors.white54),
-                            children: [
-                              TextSpan(
-                                text: 'Sign Up',
-                                style: TextStyle(
-                                  color: AppTheme.accentCyan,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                      alignment: Alignment.center,
+                      child: authState.isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation(Colors.white),
                               ),
-                            ],
+                            )
+                          : const Text(
+                              'LOG IN',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SignupView()),
+                      );
+                    },
+                    child: RichText(
+                      text: const TextSpan(
+                        text: "Don't have an account? ",
+                        style: TextStyle(color: Colors.black54),
+                        children: [
+                          TextSpan(
+                            text: 'Sign Up',
+                            style: TextStyle(
+                              color: AppTheme.colorPrimary,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

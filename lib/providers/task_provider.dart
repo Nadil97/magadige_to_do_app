@@ -55,6 +55,14 @@ class TaskController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  Future<void> updateTask(TaskModel task) async {
+    try {
+      await _dbService.updateTask(task);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
   Future<void> deleteTask(String taskId) async {
     try {
       await _dbService.deleteTask(taskId);

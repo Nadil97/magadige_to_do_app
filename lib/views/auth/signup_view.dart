@@ -31,7 +31,6 @@ class _SignupViewState extends ConsumerState<SignupView> {
             _passwordController.text.trim(),
             _nameController.text.trim(),
           ).then((_) {
-            // Check if context is still active and user registered successfully
             if (mounted && ref.read(authControllerProvider).hasValue) {
               Navigator.pop(context);
             }
@@ -39,145 +38,173 @@ class _SignupViewState extends ConsumerState<SignupView> {
     }
   }
 
+  Widget _build3DTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData prefixIcon,
+    bool obscureText = false,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.lightBg,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(4, 4)),
+          BoxShadow(color: Colors.white, blurRadius: 10, offset: Offset(-4, -4)),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        obscureText: obscureText,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          labelText: labelText,
+          prefixIcon: Icon(prefixIcon, color: AppTheme.colorPrimary),
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          filled: false,
+        ),
+        validator: validator,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
 
     return Scaffold(
+      backgroundColor: AppTheme.lightBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white70),
-          onPressed: () => Navigator.pop(context),
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.lightBg,
+            shape: BoxShape.circle,
+            boxShadow: const [
+              BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(2, 2)),
+              BoxShadow(color: Colors.white, blurRadius: 5, offset: Offset(-2, -2)),
+            ],
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.colorPrimary, size: 18),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
       ),
       extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          // Background glow
-          Positioned(
-            top: -100,
-            left: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.accentCyan.withOpacity(0.12),
-                    blurRadius: 100,
-                    spreadRadius: 50,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'START CLIMBING',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontSize: 28,
+                    letterSpacing: 2,
+                    color: AppTheme.colorPrimary,
                   ),
-                ],
-              ),
-            ),
-          ),
-          
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      'START CLIMBING',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontSize: 32,
-                        letterSpacing: 2,
-                        color: AppTheme.accentCyan,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Create your profile to start your journey',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white38,
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-
-                    // Form
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          TextFormField(
-                            controller: _nameController,
-                            decoration: const InputDecoration(
-                              labelText: 'Display Name',
-                              prefixIcon: Icon(Icons.person_outline, color: AppTheme.accentCyan),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Enter a display name';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
-                              prefixIcon: Icon(Icons.email_outlined, color: AppTheme.accentCyan),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty || !value.contains('@')) {
-                                return 'Enter a valid email address';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Password',
-                              prefixIcon: Icon(Icons.lock_outline, color: AppTheme.accentCyan),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.length < 6) {
-                                  return 'Password must be at least 6 characters';
-                              }
-                              return null;
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Actions
-                    ElevatedButton(
-                      onPressed: authState.isLoading ? null : _submit,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: authState.isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation(AppTheme.darkBg),
-                              ),
-                            )
-                          : const Text('CREATE ACCOUNT'),
-                    ),
-                  ],
                 ),
-              ),
+                const SizedBox(height: 8),
+                Text(
+                  'Create your profile to start your journey',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 48),
+
+                // Form
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      _build3DTextField(
+                        controller: _nameController,
+                        labelText: 'Display Name',
+                        prefixIcon: Icons.person_outline,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Enter a display name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      _build3DTextField(
+                        controller: _emailController,
+                        labelText: 'Email',
+                        prefixIcon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.isEmpty || !value.contains('@')) {
+                            return 'Enter a valid email address';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      _build3DTextField(
+                        controller: _passwordController,
+                        labelText: 'Password',
+                        prefixIcon: Icons.lock_outline,
+                        obscureText: true,
+                        validator: (value) {
+                          if (value == null || value.length < 6) {
+                              return 'Password must be at least 6 characters';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 48),
+
+                // Actions
+                GestureDetector(
+                  onTap: authState.isLoading ? null : _submit,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 100),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.colorPrimary,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: authState.isLoading ? [] : [
+                        BoxShadow(color: AppTheme.colorPrimary.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 6)),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: authState.isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation(Colors.white),
+                            ),
+                          )
+                        : const Text(
+                            'CREATE ACCOUNT',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
