@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/task_provider.dart';
 import '../../models/task_model.dart';
-import '../widgets/staircase_widget.dart';
+import '../widgets/zigzag_task_list.dart';
 import '../widgets/task_card.dart';
 import '../widgets/add_task_dialog.dart';
 import '../../core/theme/app_theme.dart';
@@ -42,7 +42,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
       backgroundColor: AppTheme.lightBg,
       appBar: AppBar(
         title: Text(
-          'Stair Climb Planner',
+          'Roadmap Planner',
           style: Theme.of(context).textTheme.titleLarge,
         ),
         backgroundColor: AppTheme.cardBg,
@@ -68,9 +68,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.stairs_outlined),
-            activeIcon: Icon(Icons.stairs),
-            label: 'Stairs View',
+            icon: Icon(Icons.alt_route_outlined),
+            activeIcon: Icon(Icons.alt_route),
+            label: 'Roadmap View',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.playlist_add_check_outlined),
@@ -174,7 +174,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: tasksAsync.when(
-                data: (list) => StaircaseWidget(
+                data: (list) => ZigZagTaskList(
                   tasks: list,
                   onTaskTap: (task) => _showTaskDetails(context, task, taskController),
                 ),
