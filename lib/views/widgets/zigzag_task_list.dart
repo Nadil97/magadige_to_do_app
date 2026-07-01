@@ -65,12 +65,18 @@ class _ZigZagTaskListState extends State<ZigZagTaskList> {
           child: Column(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
-                  color: AppTheme.colorSecondary.withOpacity(0.15),
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(16),
+                  image: const DecorationImage(
+                    image: AssetImage('assets/images/flag_icon.png'),
+                    fit: BoxFit.cover,
+                  ),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black26, blurRadius: 12, offset: Offset(0, 6)),
+                  ],
                 ),
-                child: const Icon(Icons.flag_rounded, size: 32, color: AppTheme.colorSecondary),
               ),
               const SizedBox(height: 4),
               const Text(
@@ -107,15 +113,18 @@ class _ZigZagTaskListState extends State<ZigZagTaskList> {
             child: Column(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(6),
+                  width: 64,
+                  height: 64,
                   decoration: BoxDecoration(
-                    color: AppTheme.colorPrimary,
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(16),
+                    image: const DecorationImage(
+                      image: AssetImage('assets/images/climber_icon.png'),
+                      fit: BoxFit.cover,
+                    ),
                     boxShadow: [
-                      BoxShadow(color: AppTheme.colorPrimary.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 4)),
+                      BoxShadow(color: AppTheme.colorPrimary.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 6)),
                     ],
                   ),
-                  child: const Icon(Icons.directions_run_rounded, size: 24, color: Colors.white),
                 ),
                 const Text('You', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.colorPrimary)),
               ],
@@ -251,15 +260,18 @@ class _ZigZagTaskListState extends State<ZigZagTaskList> {
           child: Column(
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                width: 64,
+                height: 64,
                 decoration: BoxDecoration(
-                  color: AppTheme.colorPrimary,
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(16),
+                  image: const DecorationImage(
+                    image: AssetImage('assets/images/climber_icon.png'),
+                    fit: BoxFit.cover,
+                  ),
                   boxShadow: [
-                    BoxShadow(color: AppTheme.colorPrimary.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 4)),
+                    BoxShadow(color: AppTheme.colorPrimary.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 6)),
                   ],
                 ),
-                child: const Icon(Icons.directions_run_rounded, size: 24, color: Colors.white),
               ),
               const Text('You', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.colorPrimary)),
             ],

@@ -103,17 +103,23 @@ class _HomeViewState extends ConsumerState<HomeView> {
   ) {
     return Column(
       children: [
-        // Clean XP Card
+        // Clean XP Card -> Upgraded to 3D Premium Card
         Container(
           margin: const EdgeInsets.all(16),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: AppTheme.cardBg,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: const [
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white, width: 2),
+            boxShadow: [
               BoxShadow(
+                color: AppTheme.colorPrimary.withOpacity(0.15),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+              const BoxShadow(
                 color: Colors.black12,
-                blurRadius: 4,
+                blurRadius: 5,
                 offset: Offset(0, 2),
               )
             ],
@@ -128,29 +134,86 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     children: [
                       Text(
                         'Level $level',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87),
                       ),
+                      const SizedBox(height: 2),
                       Text(
                         '$points XP Total',
-                        style: const TextStyle(color: Colors.black45, fontSize: 12),
+                        style: const TextStyle(color: Colors.black45, fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
-                  Text(
-                    '$currentLevelXp/100 XP',
-                    style: const TextStyle(color: AppTheme.colorPrimary, fontWeight: FontWeight.bold, fontSize: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppTheme.colorPrimary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '$currentLevelXp / 100 XP',
+                      style: const TextStyle(color: AppTheme.colorPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: currentLevelXp / 100.0,
-                  minHeight: 6,
-                  backgroundColor: Colors.black12,
-                  valueColor: const AlwaysStoppedAnimation(AppTheme.colorPrimary),
-                ),
+              const SizedBox(height: 16),
+              // 3D Progress Bar
+              TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 1000),
+                curve: Curves.easeOutCubic,
+                tween: Tween<double>(begin: 0.0, end: (currentLevelXp / 100.0).clamp(0.0, 1.0)),
+                builder: (context, value, child) {
+                  return Container(
+                    height: 18,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE0E5EC), // Neumorphic grey base
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.white, width: 1.5),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.centerLeft,
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: value,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          gradient: const LinearGradient(
+                            colors: [AppTheme.colorSecondary, AppTheme.colorPrimary],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.colorPrimary.withOpacity(0.6),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        // Inner reflection for 3D glossy look
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: Container(
+                            height: 6,
+                            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.white.withOpacity(0.3),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           ),
