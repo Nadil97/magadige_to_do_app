@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/task_provider.dart';
 import '../../models/task_model.dart';
@@ -239,7 +240,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
               child: tasksAsync.when(
                 data: (list) => ZigZagTaskList(
                   tasks: list,
-                  onTaskTap: (task) => _showTaskDetails(context, task, taskController),
+                  onTaskTap: (task) => _showTaskDetailsBottomSheet(context, task, taskController),
                 ),
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (err, _) => Center(child: Text('Error: $err')),
@@ -247,6 +248,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
             ),
           ),
         ),
+        
         const SizedBox(height: 16),
       ],
     );
@@ -296,14 +298,23 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 itemCount: list.length,
                 itemBuilder: (context, index) {
                   final task = list[index];
-                  return TaskCard(
-                    task: task,
-                    onStatusChange: (status) {
-                      taskController.updateStatus(task.id, status);
-                    },
-                    onDelete: () {
-                      taskController.deleteTask(task.id);
-                    },
+                  return GestureDetector(
+                    onTap: () => _showTaskDetailsBottomSheet(context, task, taskController),
+                    child: TaskCard(
+                      task: task,
+                      onEdit: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => AddTaskDialog(nextStairIndex: 0, taskToEdit: task),
+                        );
+                      },
+                      onStatusChange: (status) {
+                        taskController.updateStatus(task.id, status);
+                      },
+                      onDelete: () {
+                        taskController.deleteTask(task.id);
+                      },
+                    ),
                   );
                 },
               );
@@ -316,7 +327,23 @@ class _HomeViewState extends ConsumerState<HomeView> {
     );
   }
 
-  void _showTaskDetails(BuildContext context, TaskModel task, TaskController controller) {
+  void _showTaskDetailsBottomSheet(BuildContext context, TaskModel task, TaskController controller) {
+    Color statusColor;
+    Color statusDarkColor;
+    switch (task.status) {
+      case 'Done':
+        statusColor = const Color(0xFF10B981);
+        statusDarkColor = const Color(0xFF065F46);
+        break;
+      case 'In Progress':
+        statusColor = const Color(0xFFF59E0B);
+        statusDarkColor = const Color(0xFF78350F);
+        break;
+      default:
+        statusColor = const Color(0xFF3B82F6);
+        statusDarkColor = const Color(0xFF1E3A8A);
+    }
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -324,15 +351,12 @@ class _HomeViewState extends ConsumerState<HomeView> {
       builder: (context) {
         return Container(
           decoration: const BoxDecoration(
-            color: AppTheme.lightBg,
+            color: Color(0xFFF8FAFC),
             borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-            boxShadow: [
-              BoxShadow(color: Colors.black26, blurRadius: 20, offset: Offset(0, -5)),
-            ],
           ),
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -341,123 +365,170 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   Center(
                     child: Container(
                       width: 40,
-                      height: 5,
+                      height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.black12,
+                        color: const Color(0xFFCBD5E1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  const SizedBox(height: 20),
+
+                  // Header with Status and Title
+                  Stack(
                     children: [
-                      Expanded(
-                        child: Text(
-                          task.title,
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 24),
+                      Positioned.fill(
+                        top: 6,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: statusDarkColor,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                         ),
                       ),
                       Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         decoration: BoxDecoration(
-                          color: AppTheme.lightBg,
-                          shape: BoxShape.circle,
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(2, 2)),
-                            BoxShadow(color: Colors.white, blurRadius: 5, offset: Offset(-2, -2)),
+                          color: statusColor,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                task.status.toUpperCase(),
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                task.title,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 20),
+                              onPressed: () => Navigator.pop(context),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
                           ],
                         ),
-                        child: IconButton(
-                          icon: const Icon(Icons.close, color: Colors.black54, size: 20),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      )
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppTheme.lightBg,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: const [
-                        BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(2, 2)),
-                        BoxShadow(color: Colors.white, blurRadius: 5, offset: Offset(-2, -2)),
-                      ],
+
+                  if (task.description.isNotEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+                      ),
+                      child: Text(
+                        task.description,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF334155),
+                          fontSize: 14,
+                          height: 1.5,
+                        ),
+                      ),
                     ),
-                    child: Text(
-                      task.description.isEmpty ? 'No description provided.' : task.description,
-                      style: const TextStyle(color: Colors.black87, fontSize: 14),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Update Status Options
+                  Text(
+                    'Update Status (Process)',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF334155),
+                      fontSize: 14,
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: AppTheme.lightBg,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(2, 2)),
-                            BoxShadow(color: Colors.white, blurRadius: 5, offset: Offset(-2, -2)),
-                          ],
-                        ),
-                        child: Text('Priority: ${task.priority}', style: const TextStyle(color: AppTheme.colorSecondary, fontWeight: FontWeight.bold)),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: AppTheme.lightBg,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(2, 2)),
-                            BoxShadow(color: Colors.white, blurRadius: 5, offset: Offset(-2, -2)),
-                          ],
-                        ),
-                        child: Text('Assigned: ${task.assignedTo}', style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-                  
-                  // Status Select Row
-                  const Text('Update Status', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
                   const SizedBox(height: 12),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: ['Todo', 'In Progress', 'Done'].map((status) {
                       final isActive = task.status == status;
-                      return GestureDetector(
-                        onTap: () {
-                          controller.updateStatus(task.id, status);
-                          Navigator.pop(context);
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: isActive ? AppTheme.colorPrimary : AppTheme.lightBg,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: isActive ? [
-                              BoxShadow(color: AppTheme.colorPrimary.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4)),
-                            ] : const [
-                              BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(2, 2)),
-                              BoxShadow(color: Colors.white, blurRadius: 5, offset: Offset(-2, -2)),
-                            ],
-                          ),
-                          child: Text(
-                            status,
-                            style: TextStyle(
-                              color: isActive ? Colors.white : Colors.black87,
-                              fontWeight: FontWeight.bold,
+                      Color btnColor;
+                      Color btnDark;
+                      switch (status) {
+                        case 'Done':
+                          btnColor = const Color(0xFF10B981);
+                          btnDark = const Color(0xFF065F46);
+                          break;
+                        case 'In Progress':
+                          btnColor = const Color(0xFFF59E0B);
+                          btnDark = const Color(0xFF78350F);
+                          break;
+                        default:
+                          btnColor = const Color(0xFF3B82F6);
+                          btnDark = const Color(0xFF1E3A8A);
+                      }
+
+                      return Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: GestureDetector(
+                            onTap: () {
+                              controller.updateStatus(task.id, status);
+                              Navigator.pop(context);
+                            },
+                            child: Stack(
+                              children: [
+                                Positioned.fill(
+                                  top: 5,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: isActive ? btnDark : const Color(0xFFCBD5E1),
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: isActive ? btnColor : Colors.white,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: isActive ? btnColor : const Color(0xFFE2E8F0),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    status,
+                                    style: GoogleFonts.outfit(
+                                      color: isActive ? Colors.white : const Color(0xFF64748B),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       );
                     }).toList(),
                   ),
+                  const SizedBox(height: 8),
                 ],
               ),
             ),
