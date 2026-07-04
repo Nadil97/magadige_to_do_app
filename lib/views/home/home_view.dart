@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/task_provider.dart';
 import '../../models/task_model.dart';
-import '../widgets/staircase_widget.dart';
+import '../widgets/zigzag_task_list.dart';
 import '../widgets/task_card.dart';
 import '../widgets/add_task_dialog.dart';
 import '../../core/theme/app_theme.dart';
@@ -42,7 +43,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
       backgroundColor: AppTheme.lightBg,
       appBar: AppBar(
         title: Text(
-          'Stair Climb Planner',
+          'Roadmap Planner',
           style: Theme.of(context).textTheme.titleLarge,
         ),
         backgroundColor: AppTheme.cardBg,
@@ -68,9 +69,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.stairs_outlined),
-            activeIcon: Icon(Icons.stairs),
-            label: 'Stairs View',
+            icon: Icon(Icons.alt_route_outlined),
+            activeIcon: Icon(Icons.alt_route),
+            label: 'Roadmap View',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.playlist_add_check_outlined),
@@ -103,17 +104,23 @@ class _HomeViewState extends ConsumerState<HomeView> {
   ) {
     return Column(
       children: [
-        // Clean XP Card
+        // Clean XP Card -> Upgraded to 3D Premium Card
         Container(
           margin: const EdgeInsets.all(16),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: AppTheme.cardBg,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: const [
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white, width: 2),
+            boxShadow: [
               BoxShadow(
+                color: AppTheme.colorPrimary.withOpacity(0.15),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+              const BoxShadow(
                 color: Colors.black12,
-                blurRadius: 4,
+                blurRadius: 5,
                 offset: Offset(0, 2),
               )
             ],
@@ -128,29 +135,86 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     children: [
                       Text(
                         'Level $level',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87),
                       ),
+                      const SizedBox(height: 2),
                       Text(
                         '$points XP Total',
-                        style: const TextStyle(color: Colors.black45, fontSize: 12),
+                        style: const TextStyle(color: Colors.black45, fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
-                  Text(
-                    '$currentLevelXp/100 XP',
-                    style: const TextStyle(color: AppTheme.colorPrimary, fontWeight: FontWeight.bold, fontSize: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppTheme.colorPrimary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '$currentLevelXp / 100 XP',
+                      style: const TextStyle(color: AppTheme.colorPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: currentLevelXp / 100.0,
-                  minHeight: 6,
-                  backgroundColor: Colors.black12,
-                  valueColor: const AlwaysStoppedAnimation(AppTheme.colorPrimary),
-                ),
+              const SizedBox(height: 16),
+              // 3D Progress Bar
+              TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 1000),
+                curve: Curves.easeOutCubic,
+                tween: Tween<double>(begin: 0.0, end: (currentLevelXp / 100.0).clamp(0.0, 1.0)),
+                builder: (context, value, child) {
+                  return Container(
+                    height: 18,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE0E5EC), // Neumorphic grey base
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.white, width: 1.5),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.centerLeft,
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: value,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          gradient: const LinearGradient(
+                            colors: [AppTheme.colorSecondary, AppTheme.colorPrimary],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.colorPrimary.withOpacity(0.6),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        // Inner reflection for 3D glossy look
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: Container(
+                            height: 6,
+                            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.white.withOpacity(0.3),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -174,9 +238,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: tasksAsync.when(
-                data: (list) => StaircaseWidget(
+                data: (list) => ZigZagTaskList(
                   tasks: list,
-                  onTaskTap: (task) => _showTaskDetails(context, task, taskController),
+                  onTaskTap: (task) => _showTaskDetailsBottomSheet(context, task, taskController),
                 ),
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (err, _) => Center(child: Text('Error: $err')),
@@ -184,6 +248,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
             ),
           ),
         ),
+        
         const SizedBox(height: 16),
       ],
     );
@@ -233,14 +298,23 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 itemCount: list.length,
                 itemBuilder: (context, index) {
                   final task = list[index];
-                  return TaskCard(
-                    task: task,
-                    onStatusChange: (status) {
-                      taskController.updateStatus(task.id, status);
-                    },
-                    onDelete: () {
-                      taskController.deleteTask(task.id);
-                    },
+                  return GestureDetector(
+                    onTap: () => _showTaskDetailsBottomSheet(context, task, taskController),
+                    child: TaskCard(
+                      task: task,
+                      onEdit: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => AddTaskDialog(nextStairIndex: 0, taskToEdit: task),
+                        );
+                      },
+                      onStatusChange: (status) {
+                        taskController.updateStatus(task.id, status);
+                      },
+                      onDelete: () {
+                        taskController.deleteTask(task.id);
+                      },
+                    ),
                   );
                 },
               );
@@ -253,71 +327,210 @@ class _HomeViewState extends ConsumerState<HomeView> {
     );
   }
 
-  void _showTaskDetails(BuildContext context, TaskModel task, TaskController controller) {
+  void _showTaskDetailsBottomSheet(BuildContext context, TaskModel task, TaskController controller) {
+    Color statusColor;
+    Color statusDarkColor;
+    switch (task.status) {
+      case 'Done':
+        statusColor = const Color(0xFF10B981);
+        statusDarkColor = const Color(0xFF065F46);
+        break;
+      case 'In Progress':
+        statusColor = const Color(0xFFF59E0B);
+        statusDarkColor = const Color(0xFF78350F);
+        break;
+      default:
+        statusColor = const Color(0xFF3B82F6);
+        statusDarkColor = const Color(0xFF1E3A8A);
+    }
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.cardBg,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        task.title,
-                        style: Theme.of(context).textTheme.titleLarge,
+        return Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFCBD5E1),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.black54),
-                      onPressed: () => Navigator.pop(context),
-                    )
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  task.description.isEmpty ? 'No description provided.' : task.description,
-                  style: const TextStyle(color: Colors.black54, fontSize: 13),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Priority: ${task.priority}', style: const TextStyle(color: AppTheme.colorSecondary, fontWeight: FontWeight.bold)),
-                    Text('Assigned to: ${task.assignedTo}', style: const TextStyle(color: Colors.black45)),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                
-                // Status Select Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: ['Todo', 'In Progress', 'Done'].map((status) {
-                    final isActive = task.status == status;
-                    return ElevatedButton(
-                      onPressed: () {
-                        controller.updateStatus(task.id, status);
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isActive ? AppTheme.colorPrimary : Colors.black12,
-                        foregroundColor: isActive ? Colors.white : Colors.black87,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Header with Status and Title
+                  Stack(
+                    children: [
+                      Positioned.fill(
+                        top: 6,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: statusDarkColor,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
                       ),
-                      child: Text(status),
-                    );
-                  }).toList(),
-                ),
-              ],
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: statusColor,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                task.status.toUpperCase(),
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                task.title,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 20),
+                              onPressed: () => Navigator.pop(context),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  if (task.description.isNotEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+                      ),
+                      child: Text(
+                        task.description,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF334155),
+                          fontSize: 14,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Update Status Options
+                  Text(
+                    'Update Status (Process)',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF334155),
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: ['Todo', 'In Progress', 'Done'].map((status) {
+                      final isActive = task.status == status;
+                      Color btnColor;
+                      Color btnDark;
+                      switch (status) {
+                        case 'Done':
+                          btnColor = const Color(0xFF10B981);
+                          btnDark = const Color(0xFF065F46);
+                          break;
+                        case 'In Progress':
+                          btnColor = const Color(0xFFF59E0B);
+                          btnDark = const Color(0xFF78350F);
+                          break;
+                        default:
+                          btnColor = const Color(0xFF3B82F6);
+                          btnDark = const Color(0xFF1E3A8A);
+                      }
+
+                      return Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: GestureDetector(
+                            onTap: () {
+                              controller.updateStatus(task.id, status);
+                              Navigator.pop(context);
+                            },
+                            child: Stack(
+                              children: [
+                                Positioned.fill(
+                                  top: 5,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: isActive ? btnDark : const Color(0xFFCBD5E1),
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: isActive ? btnColor : Colors.white,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: isActive ? btnColor : const Color(0xFFE2E8F0),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    status,
+                                    style: GoogleFonts.outfit(
+                                      color: isActive ? Colors.white : const Color(0xFF64748B),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
             ),
           ),
         );

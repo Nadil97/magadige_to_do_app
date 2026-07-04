@@ -9,13 +9,13 @@ class AppTheme {
   static const Color colorPrimary = Color(0xFF3F51B5); // Deep Indigo
   static const Color colorSecondary = Color(0xFF009688); // Teal
   
-  static const Color colorTodo = Color(0xFFE0E0E0); // Light Grey
-  static const Color colorInProgress = Color(0xFFFFE082); // Soft Orange
-  static const Color colorDone = Color(0xFFC8E6C9); // Soft Green
+  static const Color colorTodo = Color(0xFF3B82F6); // Vibrant Blue
+  static const Color colorInProgress = Color(0xFFF59E0B); // Vibrant Amber
+  static const Color colorDone = Color(0xFF10B981); // Emerald Green
   
-  static const Color textTodo = Color(0xFF616161);
-  static const Color textInProgress = Color(0xFFE65100);
-  static const Color textDone = Color(0xFF2E7D32);
+  static const Color textTodo = Color(0xFF2563EB);
+  static const Color textInProgress = Color(0xFFD97706);
+  static const Color textDone = Color(0xFF059669);
 
   static const Color priorityEasy = Color(0xFFDCEDC8); 
   static const Color priorityMedium = Color(0xFFFFF9C4); 
