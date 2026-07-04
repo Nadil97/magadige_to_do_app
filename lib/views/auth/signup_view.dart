@@ -68,6 +68,25 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
     }
   }
 
+  Future<void> _submitGoogle() async {
+    final authController = ref.read(authControllerProvider.notifier);
+    await authController.signInWithGoogle();
+
+    final authState = ref.read(authControllerProvider);
+    if (authState.hasError) {
+      if (!mounted) return;
+      AppNotifications.showError(context, authState.error.toString());
+    } else if (authState.value != null) {
+      if (!mounted) return;
+      AppNotifications.showSuccess(context, 'Successfully signed up with Google!');
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeView()),
+        (route) => false,
+      );
+    }
+  }
+
   Widget _buildGlassTextField({
     required TextEditingController controller,
     required String labelText,
@@ -372,6 +391,72 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
                                 ),
                         ),
                       ),
+                      const SizedBox(height: 24),
+                      
+                      // OR Divider
+                      Row(
+                        children: [
+                          Expanded(child: Divider(color: const Color(0xFFCBD5E1), thickness: 1)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              'OR',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF64748B),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          Expanded(child: Divider(color: const Color(0xFFCBD5E1), thickness: 1)),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Google Sign-In Button
+                      Container(
+                        width: double.infinity,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF0F172A).withOpacity(0.04),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          onPressed: isLoading ? null : _submitGoogle,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.g_mobiledata, size: 28, color: const Color(0xFF1E293B)),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Sign up with Google',
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1E293B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      
                       const SizedBox(height: 32),
                       
                       // Bottom navigation link
