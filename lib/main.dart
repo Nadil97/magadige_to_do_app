@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
       title: 'Magadige To-Do',
       theme: AppTheme.darkTheme,
       debugShowCheckedModeBanner: false,
-      home: const LandingView(),
+      home: const AuthGate(),
     );
   }
 }
@@ -56,7 +56,7 @@ class AuthGate extends ConsumerWidget {
         if (user != null) {
           return const HomeView();
         }
-        return const LoginView();
+        return const LandingView();
       },
       loading: () => const Scaffold(
         body: Center(

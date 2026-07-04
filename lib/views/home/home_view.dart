@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
+import '../auth/landing_view.dart';
 import '../../providers/task_provider.dart';
 import '../../models/task_model.dart';
 import '../widgets/zigzag_task_list.dart';
@@ -51,7 +52,16 @@ class _HomeViewState extends ConsumerState<HomeView> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: Colors.black54),
-            onPressed: () => ref.read(authControllerProvider.notifier).logout(),
+            onPressed: () async {
+              await ref.read(authControllerProvider.notifier).logout();
+              if (context.mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LandingView()),
+                  (route) => false,
+                );
+              }
+            },
           ),
         ],
       ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
 import '../../core/theme/app_theme.dart';
+import '../../providers/task_provider.dart';
 
 class TaskCard extends StatefulWidget {
   final TaskModel task;
@@ -244,13 +246,19 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                         size: 12, color: Color(0xFF94A3B8)),
                                     const SizedBox(width: 3),
                                     Expanded(
-                                      child: Text(
-                                        widget.task.assignedTo,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 11,
-                                          color: const Color(0xFF94A3B8),
-                                        ),
+                                      child: Consumer(
+                                        builder: (context, ref, child) {
+                                          final userMap = ref.watch(userMapProvider).value;
+                                          final assigneeName = userMap?[widget.task.assignedTo.firstOrNull] ?? 'Unassigned';
+                                          return Text(
+                                            assigneeName,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 11,
+                                              color: const Color(0xFF94A3B8),
+                                            ),
+                                          );
+                                        },
                                       ),
                                     ),
                                   ],

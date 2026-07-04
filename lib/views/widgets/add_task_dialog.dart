@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/task_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/task_model.dart';
+import '../../models/user_model.dart';
 
 class AddTaskDialog extends ConsumerStatefulWidget {
   final int nextStairIndex;
@@ -20,7 +22,7 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
   final _descController = TextEditingController();
   
   String _selectedPriority = 'Medium';
-  String _selectedAssignee = 'Nadil Sandaruwan';
+  String _selectedAssigneeId = '';
 
   bool _isSaving = false;
 
@@ -31,7 +33,7 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
       _titleController.text = widget.taskToEdit!.title;
       _descController.text = widget.taskToEdit!.description;
       _selectedPriority = widget.taskToEdit!.priority;
-      _selectedAssignee = widget.taskToEdit!.assignedTo;
+      _selectedAssigneeId = widget.taskToEdit!.assignedTo.firstOrNull ?? '';
     }
   }
 
@@ -45,12 +47,16 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
   void _submit() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isSaving = true);
+      
+      final authUser = ref.read(authStateProvider).value;
+      final currentUserId = authUser?.uid ?? '';
+
       if (widget.taskToEdit != null) {
         final updatedTask = widget.taskToEdit!.copyWith(
           title: _titleController.text.trim(),
           description: _descController.text.trim(),
           priority: _selectedPriority,
-          assignedTo: _selectedAssignee,
+          assignedTo: [_selectedAssigneeId],
         );
         await ref.read(taskControllerProvider.notifier).updateTask(updatedTask);
       } else {
@@ -58,8 +64,9 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
               title: _titleController.text.trim(),
               description: _descController.text.trim(),
               priority: _selectedPriority,
-              assignedTo: _selectedAssignee,
+              assignedTo: _selectedAssigneeId,
               stairIndex: widget.nextStairIndex,
+              authorId: currentUserId,
             );
       }
       if (mounted) {
@@ -249,11 +256,17 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                             child: _buildFieldCard(
                               assigneesAsync.when(
                                 data: (list) {
-                                  if (!list.contains(_selectedAssignee) && list.isNotEmpty) {
-                                    _selectedAssignee = list.first;
+                                  if (!list.any((u) => u.uid == _selectedAssigneeId)) {
+                                    final authUser = ref.read(authStateProvider).value;
+                                    final currentUserId = authUser?.uid ?? '';
+                                    if (list.any((u) => u.uid == currentUserId)) {
+                                      _selectedAssigneeId = currentUserId;
+                                    } else if (list.isNotEmpty) {
+                                      _selectedAssigneeId = list.first.uid;
+                                    }
                                   }
                                   return DropdownButtonFormField<String>(
-                                    value: _selectedAssignee,
+                                    value: _selectedAssigneeId.isEmpty ? null : _selectedAssigneeId,
                                     decoration: const InputDecoration(
                                       prefixIcon: Icon(Icons.person_outline_rounded, color: Color(0xFF10B981), size: 18),
                                       border: InputBorder.none,
@@ -266,11 +279,11 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                                     ),
                                     dropdownColor: Colors.white,
                                     icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
-                                    items: list.map((a) {
-                                      return DropdownMenuItem(value: a, child: Text(a));
+                                    items: list.map((user) {
+                                      return DropdownMenuItem(value: user.uid, child: Text(user.name));
                                     }).toList(),
                                     onChanged: (val) {
-                                      if (val != null) setState(() => _selectedAssignee = val);
+                                      if (val != null) setState(() => _selectedAssigneeId = val);
                                     },
                                   );
                                 },

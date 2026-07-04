@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/task_model.dart';
+import '../models/user_model.dart';
 import '../services/database_service.dart';
 import 'auth_provider.dart';
 
@@ -8,12 +9,21 @@ final databaseServiceProvider = Provider<DatabaseService>((ref) => DatabaseServi
 final taskListStreamProvider = StreamProvider<List<TaskModel>>((ref) {
   final dbService = ref.watch(databaseServiceProvider);
   final authUser = ref.watch(authStateProvider).value;
-  final name = authUser?.name ?? 'Nadil Sandaruwan';
-  return dbService.getTasks(name);
+  if (authUser == null) return Stream.value([]);
+  return dbService.getTasks(authUser.uid);
 });
 
-final assigneeListProvider = FutureProvider<List<String>>((ref) async {
+final assigneeListProvider = FutureProvider<List<UserModel>>((ref) async {
   return ref.watch(databaseServiceProvider).getAssignees();
+});
+
+final userMapProvider = FutureProvider<Map<String, String>>((ref) async {
+  try {
+    final assignees = await ref.watch(assigneeListProvider.future);
+    return {for (var user in assignees) user.uid: user.name};
+  } catch (e) {
+    return {};
+  }
 });
 
 class TaskController extends StateNotifier<AsyncValue<void>> {
@@ -25,18 +35,21 @@ class TaskController extends StateNotifier<AsyncValue<void>> {
     required String title,
     required String description,
     required String priority,
-    required String assignedTo,
+    required String assignedTo, // Selected assignee ID
     required int stairIndex,
+    required String authorId,
   }) async {
     state = const AsyncValue.loading();
     try {
       final task = TaskModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: 'tsk_${DateTime.now().millisecondsSinceEpoch}',
         title: title,
         description: description,
         status: 'Todo',
-        assignedTo: assignedTo,
+        assignedTo: [assignedTo],
+        authorId: authorId,
         createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
         stairIndex: stairIndex,
         priority: priority,
       );
@@ -57,7 +70,8 @@ class TaskController extends StateNotifier<AsyncValue<void>> {
 
   Future<void> updateTask(TaskModel task) async {
     try {
-      await _dbService.updateTask(task);
+      final updatedTask = task.copyWith(updatedAt: DateTime.now());
+      await _dbService.updateTask(updatedTask);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }

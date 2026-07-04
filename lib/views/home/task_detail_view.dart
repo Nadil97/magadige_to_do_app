@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
+import '../../models/user_model.dart';
 import '../../providers/task_provider.dart';
 
 class TaskDetailView extends ConsumerStatefulWidget {
@@ -17,7 +18,7 @@ class _TaskDetailViewState extends ConsumerState<TaskDetailView>
     with SingleTickerProviderStateMixin {
   late TextEditingController _titleController;
   late TextEditingController _descController;
-  late TextEditingController _assigneeController;
+  late String _selectedAssigneeId;
   late String _selectedStatus;
   late String _selectedPriority;
 
@@ -32,7 +33,7 @@ class _TaskDetailViewState extends ConsumerState<TaskDetailView>
     super.initState();
     _titleController = TextEditingController(text: widget.task.title);
     _descController = TextEditingController(text: widget.task.description);
-    _assigneeController = TextEditingController(text: widget.task.assignedTo);
+    _selectedAssigneeId = widget.task.assignedTo.firstOrNull ?? '';
     _selectedStatus = widget.task.status;
     _selectedPriority = widget.task.priority;
 
@@ -50,7 +51,6 @@ class _TaskDetailViewState extends ConsumerState<TaskDetailView>
   void dispose() {
     _titleController.dispose();
     _descController.dispose();
-    _assigneeController.dispose();
     _animController.dispose();
     super.dispose();
   }
@@ -114,7 +114,7 @@ class _TaskDetailViewState extends ConsumerState<TaskDetailView>
     final updated = widget.task.copyWith(
       title: _titleController.text.trim(),
       description: _descController.text.trim(),
-      assignedTo: _assigneeController.text.trim(),
+      assignedTo: [_selectedAssigneeId],
       status: _selectedStatus,
       priority: _selectedPriority,
     );
@@ -383,22 +383,41 @@ class _TaskDetailViewState extends ConsumerState<TaskDetailView>
   }
 
   Widget _buildAssigneeField() {
+    final assigneesAsync = ref.watch(assigneeListProvider);
     return _buildCard(
-      TextFormField(
-        controller: _assigneeController,
-        style: GoogleFonts.inter(
-          fontSize: 14,
-          color: const Color(0xFF334155),
+      assigneesAsync.when(
+        data: (list) {
+          if (!list.any((u) => u.uid == _selectedAssigneeId) && list.isNotEmpty) {
+            _selectedAssigneeId = list.first.uid;
+          }
+          return DropdownButtonFormField<String>(
+            value: _selectedAssigneeId.isEmpty ? null : _selectedAssigneeId,
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.person_outline_rounded, color: Color(0xFF0D9488), size: 20),
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.only(right: 12),
+            ),
+            style: GoogleFonts.inter(
+              color: const Color(0xFF334155),
+              fontSize: 14,
+            ),
+            dropdownColor: Colors.white,
+            icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
+            items: list.map((user) {
+              return DropdownMenuItem(value: user.uid, child: Text(user.name));
+            }).toList(),
+            onChanged: (val) {
+              if (val != null) {
+                setState(() => _selectedAssigneeId = val);
+              }
+            },
+          );
+        },
+        loading: () => const Padding(
+          padding: EdgeInsets.all(12),
+          child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
         ),
-        decoration: InputDecoration(
-          hintText: 'Assignee name…',
-          hintStyle: GoogleFonts.inter(color: const Color(0xFFCBD5E1)),
-          prefixIcon: const Icon(Icons.person_outline_rounded,
-              color: Color(0xFF0D9488), size: 20),
-          border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        ),
+        error: (_, __) => const SizedBox(),
       ),
     );
   }
