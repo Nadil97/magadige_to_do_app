@@ -71,6 +71,21 @@ class AuthService {
     }
   }
 
+  // Change Password (requires reauthentication)
+  Future<void> changePassword(String currentPassword, String newPassword) async {
+    final user = _auth.currentUser;
+    if (user == null || user.email == null) {
+      throw Exception('No authenticated user found.');
+    }
+    // Re-authenticate first
+    final credential = firebase_auth.EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword,
+    );
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(newPassword);
+  }
+
   // Logout
   Future<void> signOut() async {
     await _auth.signOut();

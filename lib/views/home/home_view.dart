@@ -10,6 +10,7 @@ import '../widgets/zigzag_task_list.dart';
 import '../widgets/task_card.dart';
 import '../widgets/add_task_dialog.dart';
 import '../../core/theme/app_theme.dart';
+import 'profile_view.dart';
 
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
@@ -39,33 +40,22 @@ class _HomeViewState extends ConsumerState<HomeView> {
       _buildStaircaseTab(context, tasksAsync, taskController, level, points, currentLevelXp),
       // Tab 2: Checklist & Manage
       _buildChecklistTab(context, tasksAsync, taskController, tasks, completedTasks),
+      // Tab 3: Profile
+      const ProfileView(),
     ];
 
     return Scaffold(
       backgroundColor: AppTheme.lightBg,
-      appBar: AppBar(
-        title: Text(
-          'Roadmap Planner',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        backgroundColor: AppTheme.cardBg,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Colors.black54),
-            onPressed: () async {
-              await ref.read(authControllerProvider.notifier).logout();
-              if (context.mounted) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LandingView()),
-                  (route) => false,
-                );
-              }
-            },
-          ),
-        ],
-      ),
+      appBar: _currentIndex == 2
+          ? null
+          : AppBar(
+              title: Text(
+                'Roadmap Planner',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              backgroundColor: AppTheme.cardBg,
+              elevation: 0,
+            ),
       body: tabs[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
@@ -88,6 +78,11 @@ class _HomeViewState extends ConsumerState<HomeView> {
             icon: Icon(Icons.playlist_add_check_outlined),
             activeIcon: Icon(Icons.playlist_add_check),
             label: 'Task Checklist',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline_rounded),
+            activeIcon: Icon(Icons.person_rounded),
+            label: 'Profile',
           ),
         ],
       ),
