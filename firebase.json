@@ -1,0 +1,21 @@
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "magadige-to-do",
+                    "appId": "1:1068178440689:android:7b25d8e3ffb4cf3db84450",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "magadige-to-do",
+                    "configurations": {
+                        "android": "1:1068178440689:android:7b25d8e3ffb4cf3db84450"
+                    }
+                }
+            }
+        }
+    }
+}
