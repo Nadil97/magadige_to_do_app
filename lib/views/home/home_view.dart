@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
+import '../auth/landing_view.dart';
 import '../../providers/task_provider.dart';
+import '../../core/utils/notifications.dart';
 import '../../models/task_model.dart';
 import '../widgets/zigzag_task_list.dart';
 import '../widgets/task_card.dart';
 import '../widgets/add_task_dialog.dart';
 import '../../core/theme/app_theme.dart';
+import 'profile_view.dart';
 
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
@@ -37,24 +40,22 @@ class _HomeViewState extends ConsumerState<HomeView> {
       _buildStaircaseTab(context, tasksAsync, taskController, level, points, currentLevelXp),
       // Tab 2: Checklist & Manage
       _buildChecklistTab(context, tasksAsync, taskController, tasks, completedTasks),
+      // Tab 3: Profile
+      const ProfileView(),
     ];
 
     return Scaffold(
       backgroundColor: AppTheme.lightBg,
-      appBar: AppBar(
-        title: Text(
-          'Roadmap Planner',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        backgroundColor: AppTheme.cardBg,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Colors.black54),
-            onPressed: () => ref.read(authControllerProvider.notifier).logout(),
-          ),
-        ],
-      ),
+      appBar: _currentIndex == 2
+          ? null
+          : AppBar(
+              title: Text(
+                'Roadmap Planner',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              backgroundColor: AppTheme.cardBg,
+              elevation: 0,
+            ),
       body: tabs[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
@@ -77,6 +78,11 @@ class _HomeViewState extends ConsumerState<HomeView> {
             icon: Icon(Icons.playlist_add_check_outlined),
             activeIcon: Icon(Icons.playlist_add_check),
             label: 'Task Checklist',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline_rounded),
+            activeIcon: Icon(Icons.person_rounded),
+            label: 'Profile',
           ),
         ],
       ),
@@ -311,8 +317,16 @@ class _HomeViewState extends ConsumerState<HomeView> {
                       onStatusChange: (status) {
                         taskController.updateStatus(task.id, status);
                       },
-                      onDelete: () {
-                        taskController.deleteTask(task.id);
+                      onDelete: () async {
+                        await taskController.deleteTask(task.id);
+                        final taskState = ref.read(taskControllerProvider);
+                        if (context.mounted) {
+                          if (taskState.hasError) {
+                            AppNotifications.showError(context, taskState.error.toString());
+                          } else {
+                            AppNotifications.showSuccess(context, 'Task deleted successfully!');
+                          }
+                        }
                       },
                     ),
                   );

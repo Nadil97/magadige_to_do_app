@@ -5,6 +5,7 @@ import 'login_view.dart';
 import '../home/home_view.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/notifications.dart';
 
 class SignupView extends ConsumerStatefulWidget {
   const SignupView({super.key});
@@ -42,13 +43,29 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
     super.dispose();
   }
 
-  void _submit() {
-    // Navigate directly to HomeView to bypass authentication checks
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeView()),
-      (route) => false,
-    );
+  Future<void> _submit() async {
+    if (_formKey.currentState!.validate()) {
+      final authController = ref.read(authControllerProvider.notifier);
+      await authController.signUp(
+        _emailController.text.trim(),
+        _passwordController.text,
+        _nameController.text.trim(),
+      );
+
+      final authState = ref.read(authControllerProvider);
+      if (authState.hasError) {
+        if (!mounted) return;
+        AppNotifications.showError(context, authState.error.toString());
+      } else if (authState.value != null) {
+        if (!mounted) return;
+        AppNotifications.showSuccess(context, 'Account created successfully! Welcome!');
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeView()),
+          (route) => false,
+        );
+      }
+    }
   }
 
   Widget _buildGlassTextField({
@@ -59,10 +76,11 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
     TextInputType? keyboardType,
     String? Function(String?)? validator,
     Widget? suffixIcon,
+    bool enabled = true,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: enabled ? Colors.white : const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: const Color(0xFFE2E8F0),
@@ -80,7 +98,11 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
         controller: controller,
         obscureText: obscureText,
         keyboardType: keyboardType,
-        style: GoogleFonts.inter(color: const Color(0xFF1E293B), fontSize: 15),
+        enabled: enabled,
+        style: GoogleFonts.inter(
+          color: enabled ? const Color(0xFF1E293B) : const Color(0xFF94A3B8),
+          fontSize: 15,
+        ),
         decoration: InputDecoration(
           labelText: labelText,
           labelStyle: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 14),
@@ -99,6 +121,9 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authControllerProvider);
+    final isLoading = authState.isLoading;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: Stack(
@@ -238,6 +263,13 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
                               controller: _nameController,
                               labelText: 'Display Name',
                               prefixIcon: Icons.person_outline_rounded,
+                              enabled: !isLoading,
+                              validator: (val) {
+                                if (val == null || val.trim().isEmpty) {
+                                  return 'Please enter your display name';
+                                }
+                                return null;
+                              },
                             ),
                             const SizedBox(height: 20),
                             _buildGlassTextField(
@@ -245,6 +277,17 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
                               labelText: 'Email Address',
                               prefixIcon: Icons.email_outlined,
                               keyboardType: TextInputType.emailAddress,
+                              enabled: !isLoading,
+                              validator: (val) {
+                                if (val == null || val.trim().isEmpty) {
+                                  return 'Please enter your email';
+                                }
+                                final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                                if (!emailRegex.hasMatch(val.trim())) {
+                                  return 'Please enter a valid email address';
+                                }
+                                return null;
+                              },
                             ),
                             const SizedBox(height: 20),
                             _buildGlassTextField(
@@ -252,18 +295,28 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
                               labelText: 'Password',
                               prefixIcon: Icons.lock_outline_rounded,
                               obscureText: _obscurePassword,
+                              enabled: !isLoading,
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                                   color: const Color(0xFF64748B),
                                   size: 20,
                                 ),
-                                onPressed: () {
+                                onPressed: isLoading ? null : () {
                                   setState(() {
                                     _obscurePassword = !_obscurePassword;
                                   });
                                 },
                               ),
+                              validator: (val) {
+                                if (val == null || val.isEmpty) {
+                                  return 'Please enter a password';
+                                }
+                                if (val.length < 6) {
+                                  return 'Password must be at least 6 characters long';
+                                }
+                                return null;
+                              },
                             ),
                           ],
                         ),
@@ -277,19 +330,22 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
                         height: 56,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(18),
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF34D399), Color(0xFF059669)],
+                          gradient: LinearGradient(
+                            colors: isLoading
+                                ? [const Color(0xFF94A3B8), const Color(0xFF64748B)]
+                                : [const Color(0xFF34D399), const Color(0xFF059669)],
                           ),
                           boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF34D399).withOpacity(0.3),
-                              blurRadius: 16,
-                              offset: const Offset(0, 6),
-                            ),
+                            if (!isLoading)
+                              BoxShadow(
+                                color: const Color(0xFF34D399).withOpacity(0.3),
+                                blurRadius: 16,
+                                offset: const Offset(0, 6),
+                              ),
                           ],
                         ),
                         child: ElevatedButton(
-                          onPressed: _submit,
+                          onPressed: isLoading ? null : _submit,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             shadowColor: Colors.transparent,
@@ -297,14 +353,23 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
                               borderRadius: BorderRadius.circular(18),
                             ),
                           ),
-                          child: Text(
-                            'Create Account',
-                            style: GoogleFonts.outfit(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
+                          child: isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : Text(
+                                  'Create Account',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 32),

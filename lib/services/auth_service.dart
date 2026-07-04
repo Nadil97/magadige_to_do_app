@@ -1,80 +1,99 @@
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 
 class AuthService {
-  // Always true now since Firebase is removed
-  static const bool useMock = true;
-  
-  static UserModel? _mockUser = UserModel(
-    uid: 'mock_uid_123',
-    email: 'nadil@gmail.com',
-    displayName: 'Nadil Sandaruwan',
-    currentStep: 2,
-    level: 1,
-    points: 50,
-  );
-  
-  static final List<Map<String, String>> _mockRegisteredUsers = [
-    {'email': 'test@test.com', 'password': 'password123', 'name': 'Stair Master'}
-  ];
-
-  static void enableMockMode() {
-    print("ℹ️ Running in Local Mock Mode (Firebase completely removed).");
-  }
+  final firebase_auth.FirebaseAuth _auth = firebase_auth.FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Stream of auth changes
   Stream<UserModel?> get authStateChanges {
-    return Stream.value(_mockUser);
+    return _auth.authStateChanges().asyncMap((firebaseUser) async {
+      if (firebaseUser == null) return null;
+      return await _getUserFromFirestore(firebaseUser.uid);
+    });
+  }
+
+  Future<UserModel?> _getUserFromFirestore(String uid) async {
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (doc.exists && doc.data() != null) {
+        return UserModel.fromMap(doc.data()!);
+      }
+    } catch (e) {
+      print('Error fetching user: $e');
+    }
+    return null;
   }
 
   // Login
   Future<UserModel> login(String email, String password) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    final userMap = _mockRegisteredUsers.firstWhere(
-      (u) => u['email'] == email && u['password'] == password,
-      orElse: () => throw Exception('Incorrect email or password'),
-    );
-    
-    _mockUser = UserModel(
-      uid: 'mock_uid_${email.hashCode}',
-      email: email,
-      displayName: userMap['name'] ?? 'Stair Climber',
-      currentStep: 2,
-      level: 1,
-      points: 50,
-    );
-    return _mockUser!;
+    try {
+      final userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      final userModel = await _getUserFromFirestore(userCredential.user!.uid);
+      if (userModel == null) {
+        throw Exception('User data not found in database.');
+      }
+      return userModel;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   // Sign up
   Future<UserModel> signUp(String email, String password, String name) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    if (_mockRegisteredUsers.any((u) => u['email'] == email)) {
-      throw Exception('Email already exists');
+    try {
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      
+      final uid = userCredential.user!.uid;
+      
+      final newUser = UserModel(
+        uid: uid,
+        name: name,
+        email: email,
+        createdAt: DateTime.now(),
+        currentStep: 0,
+        level: 1,
+        points: 0,
+      );
+
+      await _firestore.collection('users').doc(uid).set(newUser.toMap());
+      
+      return newUser;
+    } catch (e) {
+      rethrow;
     }
-    
-    _mockRegisteredUsers.add({
-      'email': email,
-      'password': password,
-      'name': name,
-    });
-    
-    _mockUser = UserModel(
-      uid: 'mock_uid_${email.hashCode}',
-      email: email,
-      displayName: name,
-      currentStep: 0,
-      level: 1,
-      points: 0,
+  }
+
+  // Change Password (requires reauthentication)
+  Future<void> changePassword(String currentPassword, String newPassword) async {
+    final user = _auth.currentUser;
+    if (user == null || user.email == null) {
+      throw Exception('No authenticated user found.');
+    }
+    // Re-authenticate first
+    final credential = firebase_auth.EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword,
     );
-    return _mockUser!;
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(newPassword);
   }
 
   // Logout
   Future<void> signOut() async {
-    _mockUser = null;
+    await _auth.signOut();
   }
 
   UserModel? get currentUser {
-    return _mockUser;
+    // Current user getter is not synchronous with Firestore, 
+    // it's better to rely on providers for the current user state
+    return null;
   }
 }
