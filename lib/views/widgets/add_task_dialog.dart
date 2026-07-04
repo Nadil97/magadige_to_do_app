@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/task_model.dart';
 import '../../models/user_model.dart';
+import '../../core/utils/notifications.dart';
 
 class AddTaskDialog extends ConsumerStatefulWidget {
   final int nextStairIndex;
@@ -69,9 +70,19 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
               authorId: currentUserId,
             );
       }
+
+      final taskState = ref.read(taskControllerProvider);
       if (mounted) {
         setState(() => _isSaving = false);
-        Navigator.pop(context);
+        if (taskState.hasError) {
+          AppNotifications.showError(context, taskState.error.toString());
+        } else {
+          AppNotifications.showSuccess(
+            context,
+            widget.taskToEdit != null ? 'Task updated successfully!' : 'Task created successfully!',
+          );
+          Navigator.pop(context);
+        }
       }
     }
   }

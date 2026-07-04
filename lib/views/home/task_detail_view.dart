@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
 import '../../models/user_model.dart';
 import '../../providers/task_provider.dart';
+import '../../core/utils/notifications.dart';
 
 class TaskDetailView extends ConsumerStatefulWidget {
   final TaskModel task;
@@ -120,10 +121,16 @@ class _TaskDetailViewState extends ConsumerState<TaskDetailView>
     );
 
     await ref.read(taskControllerProvider.notifier).updateTask(updated);
+    final taskState = ref.read(taskControllerProvider);
 
     if (mounted) {
       setState(() => _saving = false);
-      Navigator.pop(context);
+      if (taskState.hasError) {
+        AppNotifications.showError(context, taskState.error.toString());
+      } else {
+        AppNotifications.showSuccess(context, 'Task updated successfully!');
+        Navigator.pop(context);
+      }
     }
   }
 
@@ -217,7 +224,15 @@ class _TaskDetailViewState extends ConsumerState<TaskDetailView>
                   await ref
                       .read(taskControllerProvider.notifier)
                       .deleteTask(widget.task.id);
-                  if (mounted) Navigator.pop(context);
+                  final taskState = ref.read(taskControllerProvider);
+                  if (mounted) {
+                    if (taskState.hasError) {
+                      AppNotifications.showError(context, taskState.error.toString());
+                    } else {
+                      AppNotifications.showSuccess(context, 'Task deleted successfully!');
+                      Navigator.pop(context);
+                    }
+                  }
                 },
                 child: const Icon(Icons.delete_outline_rounded,
                     size: 18, color: Color(0xFFEF4444)),

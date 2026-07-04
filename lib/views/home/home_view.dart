@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/landing_view.dart';
 import '../../providers/task_provider.dart';
+import '../../core/utils/notifications.dart';
 import '../../models/task_model.dart';
 import '../widgets/zigzag_task_list.dart';
 import '../widgets/task_card.dart';
@@ -321,8 +322,16 @@ class _HomeViewState extends ConsumerState<HomeView> {
                       onStatusChange: (status) {
                         taskController.updateStatus(task.id, status);
                       },
-                      onDelete: () {
-                        taskController.deleteTask(task.id);
+                      onDelete: () async {
+                        await taskController.deleteTask(task.id);
+                        final taskState = ref.read(taskControllerProvider);
+                        if (context.mounted) {
+                          if (taskState.hasError) {
+                            AppNotifications.showError(context, taskState.error.toString());
+                          } else {
+                            AppNotifications.showSuccess(context, 'Task deleted successfully!');
+                          }
+                        }
                       },
                     ),
                   );
