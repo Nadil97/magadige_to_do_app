@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/auth_provider.dart';
-import 'services/auth_service.dart';
 import 'views/auth/login_view.dart';
 import 'views/auth/landing_view.dart';
 import 'views/home/home_view.dart';
@@ -10,8 +11,17 @@ import 'views/home/home_view.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Set mock mode to true as we are running completely locally
-  AuthService.enableMockMode();
+  await dotenv.load(fileName: ".env");
+  
+  await Firebase.initializeApp(
+    options: FirebaseOptions(
+      apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '',
+      appId: dotenv.env['FIREBASE_APP_ID'] ?? '',
+      messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '',
+      projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? '',
+      storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET'],
+    ),
+  );
 
   runApp(
     const ProviderScope(

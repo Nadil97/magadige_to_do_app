@@ -42,13 +42,33 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
     super.dispose();
   }
 
-  void _submit() {
-    // Navigate directly to HomeView to bypass authentication checks
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeView()),
-      (route) => false,
-    );
+  Future<void> _submit() async {
+    if (_formKey.currentState!.validate()) {
+      final authController = ref.read(authControllerProvider.notifier);
+      await authController.signUp(
+        _emailController.text.trim(),
+        _passwordController.text,
+        _nameController.text.trim(),
+      );
+
+      final authState = ref.read(authControllerProvider);
+      if (authState.hasError) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authState.error.toString()),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      } else if (authState.value != null) {
+        if (!mounted) return;
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeView()),
+          (route) => false,
+        );
+      }
+    }
   }
 
   Widget _buildGlassTextField({

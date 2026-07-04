@@ -8,8 +8,8 @@ final databaseServiceProvider = Provider<DatabaseService>((ref) => DatabaseServi
 final taskListStreamProvider = StreamProvider<List<TaskModel>>((ref) {
   final dbService = ref.watch(databaseServiceProvider);
   final authUser = ref.watch(authStateProvider).value;
-  final displayName = authUser?.displayName ?? 'Nadil Sandaruwan';
-  return dbService.getTasks(displayName);
+  final name = authUser?.name ?? 'Nadil Sandaruwan';
+  return dbService.getTasks(name);
 });
 
 final assigneeListProvider = FutureProvider<List<String>>((ref) async {
