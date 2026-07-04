@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/task_model.dart';
 import '../models/user_model.dart';
+import '../models/comment_model.dart';
 import '../services/database_service.dart';
 import 'auth_provider.dart';
 
@@ -89,4 +90,56 @@ class TaskController extends StateNotifier<AsyncValue<void>> {
 final taskControllerProvider =
     StateNotifierProvider<TaskController, AsyncValue<void>>((ref) {
   return TaskController(ref.watch(databaseServiceProvider));
+});
+
+// ─── Comment Providers ───────────────────────────────────────────────────────
+
+/// Stream of comments for a given taskId
+final commentsStreamProvider =
+    StreamProvider.family<List<CommentModel>, String>((ref, taskId) {
+  return ref.watch(databaseServiceProvider).getComments(taskId);
+});
+
+class CommentController extends StateNotifier<AsyncValue<void>> {
+  final DatabaseService _dbService;
+
+  CommentController(this._dbService) : super(const AsyncValue.data(null));
+
+  Future<void> addComment({
+    required String taskId,
+    required String authorId,
+    required String authorName,
+    required String text,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      final comment = CommentModel(
+        commentId: 'cmt_${DateTime.now().millisecondsSinceEpoch}',
+        taskId: taskId,
+        authorId: authorId,
+        authorName: authorName,
+        text: text,
+        createdAt: DateTime.now(),
+      );
+      await _dbService.addComment(comment);
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> deleteComment(String taskId, String commentId) async {
+    state = const AsyncValue.loading();
+    try {
+      await _dbService.deleteComment(taskId, commentId);
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+}
+
+final commentControllerProvider =
+    StateNotifierProvider<CommentController, AsyncValue<void>>((ref) {
+  return CommentController(ref.watch(databaseServiceProvider));
 });

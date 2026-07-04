@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
 import '../../models/user_model.dart';
+import '../../models/comment_model.dart';
 import '../../providers/task_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../core/utils/notifications.dart';
 
 class TaskDetailView extends ConsumerStatefulWidget {
@@ -19,6 +21,7 @@ class _TaskDetailViewState extends ConsumerState<TaskDetailView>
     with SingleTickerProviderStateMixin {
   late TextEditingController _titleController;
   late TextEditingController _descController;
+  late TextEditingController _commentController;
   late String _selectedAssigneeId;
   late String _selectedStatus;
   late String _selectedPriority;
@@ -34,6 +37,7 @@ class _TaskDetailViewState extends ConsumerState<TaskDetailView>
     super.initState();
     _titleController = TextEditingController(text: widget.task.title);
     _descController = TextEditingController(text: widget.task.description);
+    _commentController = TextEditingController();
     _selectedAssigneeId = widget.task.assignedTo.firstOrNull ?? '';
     _selectedStatus = widget.task.status;
     _selectedPriority = widget.task.priority;
@@ -52,6 +56,7 @@ class _TaskDetailViewState extends ConsumerState<TaskDetailView>
   void dispose() {
     _titleController.dispose();
     _descController.dispose();
+    _commentController.dispose();
     _animController.dispose();
     super.dispose();
   }
@@ -168,6 +173,9 @@ class _TaskDetailViewState extends ConsumerState<TaskDetailView>
                       _buildSection('Status', _buildStatusPicker()),
                       const SizedBox(height: 32),
                       _buildSaveButton(),
+                      // Comments — shown only when task is Done
+                      if (_selectedStatus == 'Done') ..._buildCommentsSection(),
+                      const SizedBox(height: 40),
                     ],
                   ),
                 ),
@@ -638,6 +646,336 @@ class _TaskDetailViewState extends ConsumerState<TaskDetailView>
         ),
       ],
     );
+  }
+
+  // ─── Comments Section (shown when status == Done) ─────────────────────────
+
+  List<Widget> _buildCommentsSection() {
+    final commentsAsync = ref.watch(commentsStreamProvider(widget.task.id));
+    final commentState = ref.watch(commentControllerProvider);
+    final isSendingComment = commentState.isLoading;
+    final authUser = ref.watch(authStateProvider).value;
+    final userMap = ref.watch(userMapProvider).value ?? {};
+    final myName = userMap[authUser?.uid ?? ''] ?? 'Me';
+
+    return [
+      const SizedBox(height: 32),
+      // Section header
+      Row(
+        children: [
+          Container(
+            width: 4,
+            height: 20,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF10B981), Color(0xFF047857)],
+              ),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            'Comments',
+            style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1E293B),
+            ),
+          ),
+          const SizedBox(width: 8),
+          commentsAsync.when(
+            data: (list) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withOpacity(0.12),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '${list.length}',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF059669),
+                ),
+              ),
+            ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
+        ],
+      ),
+      const SizedBox(height: 16),
+
+      // Comment input field
+      Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0F172A).withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            const SizedBox(width: 16),
+            const Icon(Icons.chat_bubble_outline_rounded,
+                color: Color(0xFF10B981), size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: TextField(
+                controller: _commentController,
+                enabled: !isSendingComment,
+                maxLines: 1,
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF1E293B),
+                  fontSize: 14,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Add a completion note…',
+                  hintStyle: GoogleFonts.inter(
+                    color: const Color(0xFF94A3B8),
+                    fontSize: 14,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 14),
+                ),
+                onSubmitted: (_) async => _submitComment(authUser, myName),
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: isSendingComment
+                  ? null
+                  : () => _submitComment(authUser, myName),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.all(6),
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isSendingComment
+                        ? [const Color(0xFF94A3B8), const Color(0xFF64748B)]
+                        : [const Color(0xFF10B981), const Color(0xFF059669)],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    if (!isSendingComment)
+                      BoxShadow(
+                        color: const Color(0xFF10B981).withOpacity(0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                  ],
+                ),
+                child: isSendingComment
+                    ? const Padding(
+                        padding: EdgeInsets.all(10),
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Icon(Icons.send_rounded,
+                        color: Colors.white, size: 18),
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 16),
+
+      // Comment list
+      commentsAsync.when(
+        loading: () => const Padding(
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: Center(
+            child: CircularProgressIndicator(color: Color(0xFF10B981)),
+          ),
+        ),
+        error: (e, _) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Text('Could not load comments: $e',
+              style: GoogleFonts.inter(
+                  color: const Color(0xFFEF4444), fontSize: 13)),
+        ),
+        data: (comments) {
+          if (comments.isEmpty) {
+            return Container(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              alignment: Alignment.center,
+              child: Column(
+                children: [
+                  Icon(Icons.chat_bubble_outline_rounded,
+                      size: 36,
+                      color: const Color(0xFF94A3B8).withOpacity(0.6)),
+                  const SizedBox(height: 8),
+                  Text(
+                    'No comments yet.\nBe the first to leave a note!',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF94A3B8),
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+          return Column(
+            children: comments
+                .map((c) => _buildCommentCard(c, authUser?.uid))
+                .toList(),
+          );
+        },
+      ),
+    ];
+  }
+
+  Future<void> _submitComment(dynamic authUser, String myName) async {
+    final text = _commentController.text.trim();
+    if (text.isEmpty) return;
+    _commentController.clear();
+    await ref.read(commentControllerProvider.notifier).addComment(
+          taskId: widget.task.id,
+          authorId: authUser?.uid ?? '',
+          authorName: myName,
+          text: text,
+        );
+    final state = ref.read(commentControllerProvider);
+    if (mounted && state.hasError) {
+      AppNotifications.showError(context, 'Failed to post comment.');
+    }
+  }
+
+  Widget _buildCommentCard(CommentModel comment, String? myUid) {
+    final isMe = comment.authorId == myUid;
+    final time = _formatTime(comment.createdAt);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isMe
+              ? const Color(0xFF10B981).withOpacity(0.3)
+              : const Color(0xFFE2E8F0),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F172A).withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                // Avatar circle
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: isMe
+                          ? [const Color(0xFF10B981), const Color(0xFF059669)]
+                          : [const Color(0xFF6366F1), const Color(0xFF4F46E5)],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    comment.authorName.isNotEmpty
+                        ? comment.authorName[0].toUpperCase()
+                        : '?',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isMe ? '${comment.authorName} (You)' : comment.authorName,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1E293B),
+                        ),
+                      ),
+                      Text(
+                        time,
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: const Color(0xFF94A3B8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Delete button — only for own comments
+                if (isMe)
+                  GestureDetector(
+                    onTap: () async {
+                      await ref
+                          .read(commentControllerProvider.notifier)
+                          .deleteComment(widget.task.id, comment.commentId);
+                    },
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEE2E2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.close_rounded,
+                          size: 15, color: Color(0xFFEF4444)),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              comment.text,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: const Color(0xFF334155),
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatTime(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${dt.day}/${dt.month}/${dt.year}';
   }
 }
 

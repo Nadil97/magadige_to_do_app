@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/task_model.dart';
 import '../models/user_model.dart';
+import '../models/comment_model.dart';
 
 class DatabaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -62,5 +63,39 @@ class DatabaseService {
   // Update user score/level based on current climbing steps
   Future<void> updateUserProgress(UserModel user) async {
     await _firestore.collection('users').doc(user.uid).update(user.toMap());
+  }
+
+  // ─── Comments subcollection (/tasks/{taskId}/comments) ───────────────────
+
+  // Stream all comments for a task, ordered by time
+  Stream<List<CommentModel>> getComments(String taskId) {
+    return _firestore
+        .collection('tasks')
+        .doc(taskId)
+        .collection('comments')
+        .orderBy('createdAt', descending: false)
+        .snapshots()
+        .map((snap) =>
+            snap.docs.map((d) => CommentModel.fromMap(d.data())).toList());
+  }
+
+  // Add a comment to a task
+  Future<void> addComment(CommentModel comment) async {
+    await _firestore
+        .collection('tasks')
+        .doc(comment.taskId)
+        .collection('comments')
+        .doc(comment.commentId)
+        .set(comment.toMap());
+  }
+
+  // Delete a comment from a task
+  Future<void> deleteComment(String taskId, String commentId) async {
+    await _firestore
+        .collection('tasks')
+        .doc(taskId)
+        .collection('comments')
+        .doc(commentId)
+        .delete();
   }
 }
