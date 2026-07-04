@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1068178440689",
+    "project_id": "magadige-to-do",
+    "storage_bucket": "magadige-to-do.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1068178440689:android:7b25d8e3ffb4cf3db84450",
+        "android_client_info": {
+          "package_name": "com.example.magadige_to_do"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1068178440689-f6g0islai9j5ihinlukqkdu8boi809du.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdOgYH9Ar_r5RH0b4Z5jshnQc92MGeA8s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1068178440689-f6g0islai9j5ihinlukqkdu8boi809du.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
