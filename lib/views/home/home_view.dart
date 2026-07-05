@@ -359,196 +359,203 @@ class _HomeViewState extends ConsumerState<HomeView> {
     }
 
     showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Handle bar
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFCBD5E1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+  context: context,
+  backgroundColor: Colors.transparent,
+  isScrollControlled: true, 
+  builder: (context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      child: SafeArea(
+        child: Padding(
+          // Padding eka bottom ekata 'mediaQuery viewInsets' damma coding scene ekedi keyboard eka up unama content eka push wenna
+          padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + MediaQuery.of(context).viewInsets.bottom),
+          child: SingleChildScrollView(
+            // Meka thama scroll eka denne
+            physics: const BouncingScrollPhysics(), // Premium smooth look ekak enna
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // 1. Handle bar
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFCBD5E1),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                ),
+                const SizedBox(height: 20),
 
-                  // Header with Status and Title
-                  Stack(
-                    children: [
-                      Positioned.fill(
-                        top: 6,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: statusDarkColor,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                // 2. Header with Status and Title
+                Stack(
+                  children: [
+                    Positioned.fill(
+                      top: 6,
+                      child: Container(
                         decoration: BoxDecoration(
-                          color: statusColor,
+                          color: statusDarkColor,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                task.status.toUpperCase(),
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                task.title,
-                                style: GoogleFonts.outfit(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 20),
-                              onPressed: () => Navigator.pop(context),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                            ),
-                          ],
-                        ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  if (task.description.isNotEmpty) ...[
+                    ),
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+                        color: statusColor,
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Text(
-                        task.description,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF334155),
-                          fontSize: 14,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // Update Status Options
-                  Text(
-                    'Update Status (Process)',
-                    style: GoogleFonts.outfit(
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF334155),
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: ['Todo', 'In Progress', 'Done'].map((status) {
-                      final isActive = task.status == status;
-                      Color btnColor;
-                      Color btnDark;
-                      switch (status) {
-                        case 'Done':
-                          btnColor = const Color(0xFF10B981);
-                          btnDark = const Color(0xFF065F46);
-                          break;
-                        case 'In Progress':
-                          btnColor = const Color(0xFFF59E0B);
-                          btnDark = const Color(0xFF78350F);
-                          break;
-                        default:
-                          btnColor = const Color(0xFF3B82F6);
-                          btnDark = const Color(0xFF1E3A8A);
-                      }
-
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: GestureDetector(
-                            onTap: () {
-                              controller.updateStatus(task.id, status);
-                              Navigator.pop(context);
-                            },
-                            child: Stack(
-                              children: [
-                                Positioned.fill(
-                                  top: 5,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: isActive ? btnDark : const Color(0xFFCBD5E1),
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: isActive ? btnColor : Colors.white,
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: isActive ? btnColor : const Color(0xFFE2E8F0),
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    status,
-                                    style: GoogleFonts.outfit(
-                                      color: isActive ? Colors.white : const Color(0xFF64748B),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              task.status.toUpperCase(),
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    }).toList(),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              task.title,
+                              style: GoogleFonts.outfit(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 20),
+                            onPressed: () => Navigator.pop(context),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // 3. Description Section
+                if (task.description.isNotEmpty) ...[
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+                    ),
+                    child: Text(
+                      task.description,
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF334155),
+                        fontSize: 14,
+                        height: 1.5,
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
                 ],
-              ),
+
+                // 4. Update Status Options
+                Text(
+                  'Update Status (Process)',
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF334155),
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: ['Todo', 'In Progress', 'Done'].map((status) {
+                    final isActive = task.status == status;
+                    Color btnColor;
+                    Color btnDark;
+                    switch (status) {
+                      case 'Done':
+                        btnColor = const Color(0xFF10B981);
+                        btnDark = const Color(0xFF065F46);
+                        break;
+                      case 'In Progress':
+                        btnColor = const Color(0xFFF59E0B);
+                        btnDark = const Color(0xFF78350F);
+                        break;
+                      default:
+                        btnColor = const Color(0xFF3B82F6);
+                        btnDark = const Color(0xFF1E3A8A);
+                    }
+
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: GestureDetector(
+                          onTap: () {
+                            controller.updateStatus(task.id, status);
+                            Navigator.pop(context);
+                          },
+                          child: Stack(
+                            children: [
+                              Positioned.fill(
+                                top: 5,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: isActive ? btnDark : const Color(0xFFCBD5E1),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: isActive ? btnColor : Colors.white,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: isActive ? btnColor : const Color(0xFFE2E8F0),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  status,
+                                  style: GoogleFonts.outfit(
+                                    color: isActive ? Colors.white : const Color(0xFF64748B),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 8),
+              ],
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
+  },
+);
+  
   }
 }
