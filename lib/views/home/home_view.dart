@@ -259,8 +259,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
       ],
     );
   }
-
-  Widget _buildChecklistTab(
+Widget _buildChecklistTab(
     BuildContext context,
     AsyncValue<List<TaskModel>> tasksAsync,
     TaskController taskController,
@@ -304,31 +303,34 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 itemCount: list.length,
                 itemBuilder: (context, index) {
                   final task = list[index];
-                  return GestureDetector(
-                    onTap: () => _showTaskDetailsBottomSheet(context, task, taskController),
-                    child: TaskCard(
-                      task: task,
-                      onEdit: () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => AddTaskDialog(nextStairIndex: 0, taskToEdit: task),
-                        );
-                      },
-                      onStatusChange: (status) {
-                        taskController.updateStatus(task.id, status);
-                      },
-                      onDelete: () async {
-                        await taskController.deleteTask(task.id);
-                        final taskState = ref.read(taskControllerProvider);
-                        if (context.mounted) {
-                          if (taskState.hasError) {
-                            AppNotifications.showError(context, taskState.error.toString());
-                          } else {
-                            AppNotifications.showSuccess(context, 'Task deleted successfully!');
-                          }
+                  
+                  // 🌟 REMOVED: Wate thibba GestureDetector eka ain kala, kelinma TaskCard eka return කරනවා
+                  return TaskCard(
+                    task: task,
+                    onEdit: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => AddTaskDialog(nextStairIndex: 0, taskToEdit: task),
+                      );
+                    },
+                    onStatusChange: (status) {
+                      taskController.updateStatus(task.id, status);
+                    },
+                    onDelete: () async {
+                      await taskController.deleteTask(task.id);
+                      final taskState = ref.read(taskControllerProvider);
+                      if (context.mounted) {
+                        if (taskState.hasError) {
+                          AppNotifications.showError(context, taskState.error.toString());
+                        } else {
+                          AppNotifications.showSuccess(context, 'Task deleted successfully!');
                         }
-                      },
-                    ),
+                      }
+                    },
+                    // 🌟 ADDED: Aluth onView parameter eka methanadi pass kala
+                    onView: () {
+                      _showTaskDetailsBottomSheet(context, task, taskController);
+                    },
                   );
                 },
               );
@@ -340,6 +342,86 @@ class _HomeViewState extends ConsumerState<HomeView> {
       ],
     );
   }
+  // Widget _buildChecklistTab(
+  //   BuildContext context,
+  //   AsyncValue<List<TaskModel>> tasksAsync,
+  //   TaskController taskController,
+  //   List<TaskModel> tasks,
+  //   List<TaskModel> completedTasks,
+  // ) {
+  //   return Column(
+  //     children: [
+  //       // Status checklist header
+  //       Padding(
+  //         padding: const EdgeInsets.all(16.0),
+  //         child: Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             const Text(
+  //               'Manage Checklist Tasks',
+  //               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+  //             ),
+  //             Text(
+  //               '${completedTasks.length}/${tasks.length} Done',
+  //               style: const TextStyle(color: AppTheme.colorSecondary, fontWeight: FontWeight.bold, fontSize: 13),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+
+  //       // List
+  //       Expanded(
+  //         child: tasksAsync.when(
+  //           data: (list) {
+  //             if (list.isEmpty) {
+  //               return const Center(
+  //                 child: Text(
+  //                   'No steps created yet. Click + to add steps.',
+  //                   style: TextStyle(color: Colors.black38),
+  //                 ),
+  //               );
+  //             }
+  //             return ListView.builder(
+  //               padding: const EdgeInsets.symmetric(horizontal: 16),
+  //               itemCount: list.length,
+  //               itemBuilder: (context, index) {
+  //                 final task = list[index];
+  //                 return GestureDetector(
+  //                   onTap: () => _showTaskDetailsBottomSheet(context, task, taskController),
+  //                   child: TaskCard(
+  //                     task: task,
+  //                     onEdit: () {
+  //                       showDialog(
+  //                         context: context,
+  //                         builder: (_) => AddTaskDialog(nextStairIndex: 0, taskToEdit: task),
+  //                       );
+  //                     },
+  //                     onStatusChange: (status) {
+  //                       taskController.updateStatus(task.id, status);
+  //                     },
+  //                     onDelete: () async {
+  //                       await taskController.deleteTask(task.id);
+  //                       final taskState = ref.read(taskControllerProvider);
+  //                       if (context.mounted) {
+  //                         if (taskState.hasError) {
+  //                           AppNotifications.showError(context, taskState.error.toString());
+  //                         } else {
+  //                           AppNotifications.showSuccess(context, 'Task deleted successfully!');
+  //                         }
+  //                       }
+  //                     },
+  //                   ),
+  //                 );
+  //               },
+  //             );
+  //           },
+  //           loading: () => const Center(child: CircularProgressIndicator()),
+  //           error: (err, _) => Center(child: Text('Error: $err')),
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   void _showTaskDetailsBottomSheet(BuildContext context, TaskModel task, TaskController controller) {
     Color statusColor;
