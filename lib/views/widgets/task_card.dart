@@ -10,7 +10,7 @@ class TaskCard extends StatefulWidget {
   final Function(String) onStatusChange;
   final VoidCallback onDelete;
   final VoidCallback? onEdit;
-  final VoidCallback onView; // 🌟 Eye icon එකට සහ full card click එකට මේක use වෙනවා
+  final VoidCallback onView; 
 
   const TaskCard({
     super.key,
@@ -18,7 +18,7 @@ class TaskCard extends StatefulWidget {
     required this.onStatusChange,
     required this.onDelete,
     this.onEdit,
-    required this.onView, // 🌟 Parameter name eka onView කලා
+    required this.onView, 
   });
 
   @override
