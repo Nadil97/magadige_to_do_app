@@ -210,29 +210,6 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
             ),
           ),
 
-          // Custom back button
-          Positioned(
-            top: 50,
-            left: 20,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF0F172A).withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF334155), size: 18),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-          ),
 
           SafeArea(
             child: Center(
@@ -515,6 +492,30 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
                     ],
                   ),
                 ),
+              ),
+            ),
+          ),
+
+          // Custom back button
+          Positioned(
+            top: 50,
+            left: 20,
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+                border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF0F172A).withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF334155), size: 18),
+                onPressed: () => Navigator.pop(context),
               ),
             ),
           ),
