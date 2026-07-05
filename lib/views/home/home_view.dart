@@ -353,21 +353,23 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 itemCount: list.length,
                 itemBuilder: (context, index) {
                   final task = list[index];
+                  final authUser = ref.watch(authStateProvider).value;
+                  final isAuthor = authUser?.uid == task.authorId;
 
                   // 🌟 REMOVED: Wate thibba GestureDetector eka ain kala, kelinma TaskCard eka return කරනවා
                   return TaskCard(
                     task: task,
-                    onEdit: () {
+                    onEdit: isAuthor ? () {
                       showDialog(
                         context: context,
                         builder: (_) =>
                             AddTaskDialog(nextStairIndex: 0, taskToEdit: task),
                       );
-                    },
+                    } : null,
                     onStatusChange: (status) {
                       taskController.updateStatus(task.id, status);
                     },
-                    onDelete: () async {
+                    onDelete: isAuthor ? () async {
                       await taskController.deleteTask(task.id);
                       final taskState = ref.read(taskControllerProvider);
                       if (context.mounted) {
@@ -383,7 +385,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                           );
                         }
                       }
-                    },
+                    } : null,
                     // 🌟 ADDED: Aluth onView parameter eka methanadi pass kala
                     onView: () {
                       _showTaskDetailsBottomSheet(

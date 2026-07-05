@@ -8,7 +8,7 @@ import '../../providers/task_provider.dart';
 class TaskCard extends StatefulWidget {
   final TaskModel task;
   final Function(String) onStatusChange;
-  final VoidCallback onDelete;
+  final VoidCallback? onDelete;
   final VoidCallback? onEdit;
   final VoidCallback onView; 
 
@@ -16,7 +16,7 @@ class TaskCard extends StatefulWidget {
     super.key,
     required this.task,
     required this.onStatusChange,
-    required this.onDelete,
+    this.onDelete,
     this.onEdit,
     required this.onView, 
   });
@@ -323,12 +323,14 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                   ],
 
                                   // DELETE BUTTON
-                                  _buildMiniActionButton(
-                                    icon: Icons.delete_outline_rounded,
-                                    iconColor: const Color(0xFFEF4444),
-                                    bgColor: const Color(0xFFFEE2E2),
-                                    onTap: widget.onDelete,
-                                  ),
+                                  if (widget.onDelete != null) ...[
+                                    _buildMiniActionButton(
+                                      icon: Icons.delete_outline_rounded,
+                                      iconColor: const Color(0xFFEF4444),
+                                      bgColor: const Color(0xFFFEE2E2),
+                                      onTap: widget.onDelete!,
+                                    ),
+                                  ],
                                 ],
                               ),
                               const SizedBox(height: 16),

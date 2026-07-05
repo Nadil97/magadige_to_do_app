@@ -74,7 +74,6 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
       final authState = ref.read(authControllerProvider);
       if (authState.hasError) {
         if (!mounted) return;
-        // 🌟 App notifications passing formatted errors
         final friendlyMsg = _getFriendlyErrorMessage(authState.error);
         AppNotifications.showError(context, friendlyMsg);
       } else if (authState.value != null) {
