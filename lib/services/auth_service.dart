@@ -1,12 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
 
 class AuthService {
   final firebase_auth.FirebaseAuth _auth = firebase_auth.FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Stream of auth changes
   Stream<UserModel?> get authStateChanges {
     return _auth.authStateChanges().asyncMap((firebaseUser) async {
       if (firebaseUser == null) return null;
@@ -71,13 +71,62 @@ class AuthService {
     }
   }
 
+  bool _isGoogleInitialized = false;
+
+  // Google Sign-In
+  Future<UserModel> signInWithGoogle() async {
+    try {
+      if (!_isGoogleInitialized) {
+        await GoogleSignIn.instance.initialize();
+        _isGoogleInitialized = true;
+      }
+      final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate();
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final firebase_auth.OAuthCredential credential =
+          firebase_auth.GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential =
+          await _auth.signInWithCredential(credential);
+
+      final uid = userCredential.user!.uid;
+
+      // Check if user exists
+      final existingUser = await _getUserFromFirestore(uid);
+      if (existingUser != null) {
+        return existingUser;
+      }
+
+      // Create new user in Firestore
+      final newUser = UserModel(
+        uid: uid,
+        name: userCredential.user!.displayName ?? 'Google User',
+        email: userCredential.user!.email ?? '',
+        createdAt: DateTime.now(),
+        currentStep: 0,
+        level: 1,
+        points: 0,
+      );
+
+      await _firestore.collection('users').doc(uid).set(newUser.toMap());
+
+      return newUser;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // Change Password (requires reauthentication)
   Future<void> changePassword(String currentPassword, String newPassword) async {
     final user = _auth.currentUser;
     if (user == null || user.email == null) {
       throw Exception('No authenticated user found.');
     }
-    // Re-authenticate first
+    
     final credential = firebase_auth.EmailAuthProvider.credential(
       email: user.email!,
       password: currentPassword,
@@ -92,8 +141,6 @@ class AuthService {
   }
 
   UserModel? get currentUser {
-    // Current user getter is not synchronous with Firestore, 
-    // it's better to rely on providers for the current user state
     return null;
   }
 }

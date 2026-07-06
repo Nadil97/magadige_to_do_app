@@ -3,15 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/task_provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../core/theme/app_theme.dart';
 import '../../models/task_model.dart';
-import '../../models/user_model.dart';
 import '../../core/utils/notifications.dart';
 
 class AddTaskDialog extends ConsumerStatefulWidget {
   final int nextStairIndex;
   final TaskModel? taskToEdit;
-  const AddTaskDialog({super.key, required this.nextStairIndex, this.taskToEdit});
+  const AddTaskDialog({
+    super.key,
+    required this.nextStairIndex,
+    this.taskToEdit,
+  });
 
   @override
   ConsumerState<AddTaskDialog> createState() => _AddTaskDialogState();
@@ -21,7 +23,7 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
-  
+
   String _selectedPriority = 'Medium';
   String _selectedAssigneeId = '';
 
@@ -48,7 +50,7 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
   void _submit() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isSaving = true);
-      
+
       final authUser = ref.read(authStateProvider).value;
       final currentUserId = authUser?.uid ?? '';
 
@@ -61,7 +63,9 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
         );
         await ref.read(taskControllerProvider.notifier).updateTask(updatedTask);
       } else {
-        await ref.read(taskControllerProvider.notifier).addTask(
+        await ref
+            .read(taskControllerProvider.notifier)
+            .addTask(
               title: _titleController.text.trim(),
               description: _descController.text.trim(),
               priority: _selectedPriority,
@@ -79,7 +83,9 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
         } else {
           AppNotifications.showSuccess(
             context,
-            widget.taskToEdit != null ? 'Task updated successfully!' : 'Task created successfully!',
+            widget.taskToEdit != null
+                ? 'Task updated successfully!'
+                : 'Task created successfully!',
           );
           Navigator.pop(context);
         }
@@ -134,7 +140,9 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(28),
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFF0F172A).withOpacity(0.05),
@@ -155,7 +163,9 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
-                          isEditing ? Icons.edit_note_rounded : Icons.add_task_rounded,
+                          isEditing
+                              ? Icons.edit_note_rounded
+                              : Icons.add_task_rounded,
                           color: const Color(0xFF4F46E5),
                           size: 20,
                         ),
@@ -179,7 +189,11 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                         color: const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.close_rounded, color: Color(0xFF64748B), size: 18),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        color: Color(0xFF64748B),
+                        size: 18,
+                      ),
                     ),
                   ),
                 ],
@@ -206,12 +220,23 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                           ),
                           decoration: InputDecoration(
                             hintText: 'Task Title',
-                            hintStyle: GoogleFonts.outfit(color: const Color(0xFFCBD5E1)),
-                            prefixIcon: const Icon(Icons.title_rounded, color: Color(0xFF6366F1), size: 20),
+                            hintStyle: GoogleFonts.outfit(
+                              color: const Color(0xFFCBD5E1),
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.title_rounded,
+                              color: Color(0xFF6366F1),
+                              size: 20,
+                            ),
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
                           ),
-                          validator: (val) => (val == null || val.isEmpty) ? 'Enter a title' : null,
+                          validator: (val) => (val == null || val.isEmpty)
+                              ? 'Enter a title'
+                              : null,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -226,7 +251,9 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                           ),
                           decoration: InputDecoration(
                             hintText: 'Description (optional)',
-                            hintStyle: GoogleFonts.inter(color: const Color(0xFFCBD5E1)),
+                            hintStyle: GoogleFonts.inter(
+                              color: const Color(0xFFCBD5E1),
+                            ),
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.all(16),
                           ),
@@ -242,7 +269,11 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                               DropdownButtonFormField<String>(
                                 value: _selectedPriority,
                                 decoration: const InputDecoration(
-                                  prefixIcon: Icon(Icons.flag_rounded, color: Color(0xFFF59E0B), size: 18),
+                                  prefixIcon: Icon(
+                                    Icons.flag_rounded,
+                                    color: Color(0xFFF59E0B),
+                                    size: 18,
+                                  ),
                                   border: InputBorder.none,
                                   contentPadding: EdgeInsets.only(right: 12),
                                 ),
@@ -252,12 +283,19 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                                   fontSize: 13,
                                 ),
                                 dropdownColor: Colors.white,
-                                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
+                                icon: const Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: Color(0xFF94A3B8),
+                                ),
                                 items: ['Easy', 'Medium', 'Hard'].map((p) {
-                                  return DropdownMenuItem(value: p, child: Text(p));
+                                  return DropdownMenuItem(
+                                    value: p,
+                                    child: Text(p),
+                                  );
                                 }).toList(),
                                 onChanged: (val) {
-                                  if (val != null) setState(() => _selectedPriority = val);
+                                  if (val != null)
+                                    setState(() => _selectedPriority = val);
                                 },
                               ),
                             ),
@@ -267,21 +305,37 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                             child: _buildFieldCard(
                               assigneesAsync.when(
                                 data: (list) {
-                                  if (!list.any((u) => u.uid == _selectedAssigneeId)) {
-                                    final authUser = ref.read(authStateProvider).value;
+                                  if (!list.any(
+                                    (u) => u.uid == _selectedAssigneeId,
+                                  )) {
+                                    final authUser = ref
+                                        .read(authStateProvider)
+                                        .value;
                                     final currentUserId = authUser?.uid ?? '';
-                                    if (list.any((u) => u.uid == currentUserId)) {
+                                    if (list.any(
+                                      (u) => u.uid == currentUserId,
+                                    )) {
                                       _selectedAssigneeId = currentUserId;
                                     } else if (list.isNotEmpty) {
                                       _selectedAssigneeId = list.first.uid;
                                     }
                                   }
                                   return DropdownButtonFormField<String>(
-                                    value: _selectedAssigneeId.isEmpty ? null : _selectedAssigneeId,
+                                   
+                                    value: _selectedAssigneeId.isEmpty
+                                        ? null
+                                        : _selectedAssigneeId,
+                                    isExpanded: true,
                                     decoration: const InputDecoration(
-                                      prefixIcon: Icon(Icons.person_outline_rounded, color: Color(0xFF10B981), size: 18),
+                                      prefixIcon: Icon(
+                                        Icons.person_outline_rounded,
+                                        color: Color(0xFF10B981),
+                                        size: 18,
+                                      ),
                                       border: InputBorder.none,
-                                      contentPadding: EdgeInsets.only(right: 12),
+                                      contentPadding: EdgeInsets.only(
+                                        right: 12,
+                                      ),
                                     ),
                                     style: GoogleFonts.outfit(
                                       color: const Color(0xFF1E293B),
@@ -289,18 +343,38 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                                       fontSize: 13,
                                     ),
                                     dropdownColor: Colors.white,
-                                    icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
+                                    icon: const Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      color: Color(0xFF94A3B8),
+                                    ),
                                     items: list.map((user) {
-                                      return DropdownMenuItem(value: user.uid, child: Text(user.name));
+                                      return DropdownMenuItem(
+                                        value: user.uid,
+                                        child: Text(
+                                          user.name,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      );
                                     }).toList(),
                                     onChanged: (val) {
-                                      if (val != null) setState(() => _selectedAssigneeId = val);
+                                      if (val != null)
+                                        setState(
+                                          () => _selectedAssigneeId = val,
+                                        );
                                     },
                                   );
                                 },
                                 loading: () => const Padding(
                                   padding: EdgeInsets.all(12),
-                                  child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+                                  child: Center(
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                                 error: (_, __) => const SizedBox(),
                               ),
@@ -311,7 +385,11 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                       const SizedBox(height: 32),
 
                       // Save Button
-                      _SubmitButton(isEditing: isEditing, isSaving: _isSaving, onTap: _submit),
+                      _SubmitButton(
+                        isEditing: isEditing,
+                        isSaving: _isSaving,
+                        onTap: _submit,
+                      ),
                     ],
                   ),
                 ),
@@ -329,7 +407,11 @@ class _SubmitButton extends StatefulWidget {
   final bool isSaving;
   final VoidCallback onTap;
 
-  const _SubmitButton({required this.isEditing, required this.isSaving, required this.onTap});
+  const _SubmitButton({
+    required this.isEditing,
+    required this.isSaving,
+    required this.onTap,
+  });
 
   @override
   State<_SubmitButton> createState() => _SubmitButtonState();
@@ -360,7 +442,11 @@ class _SubmitButtonState extends State<_SubmitButton> {
           ),
           AnimatedContainer(
             duration: const Duration(milliseconds: 80),
-            transform: Matrix4.translationValues(0, _pressed || widget.isSaving ? 6 : 0, 0),
+            transform: Matrix4.translationValues(
+              0,
+              _pressed || widget.isSaving ? 6 : 0,
+              0,
+            ),
             padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
@@ -381,7 +467,10 @@ class _SubmitButtonState extends State<_SubmitButton> {
                 ? const SizedBox(
                     width: 22,
                     height: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2.5, valueColor: AlwaysStoppedAnimation(Colors.white)),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation(Colors.white),
+                    ),
                   )
                 : Text(
                     widget.isEditing ? 'Save Changes' : 'Add Task to Stairs',

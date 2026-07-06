@@ -2,21 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
-import '../../core/theme/app_theme.dart';
 import '../../providers/task_provider.dart';
 
 class TaskCard extends StatefulWidget {
   final TaskModel task;
   final Function(String) onStatusChange;
-  final VoidCallback onDelete;
+  final VoidCallback? onDelete;
   final VoidCallback? onEdit;
+  final VoidCallback onView; 
 
   const TaskCard({
     super.key,
     required this.task,
     required this.onStatusChange,
-    required this.onDelete,
+    this.onDelete,
     this.onEdit,
+    required this.onView, 
   });
 
   @override
@@ -27,7 +28,6 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
   bool _isPressed = false;
 
   // ─── Status colours ────────────────────────────────────────────────────────
-
   Color get _statusColor {
     switch (widget.task.status) {
       case 'Done':         return const Color(0xFF10B981);
@@ -61,7 +61,6 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
   }
 
   // ─── Priority ─────────────────────────────────────────────────────────────
-
   Color _priorityColor(String p) {
     switch (p) {
       case 'Hard':   return const Color(0xFFEF4444);
@@ -70,30 +69,59 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
     }
   }
 
-  // ─── Build ─────────────────────────────────────────────────────────────────
+  // ─── Mini Action Button Builder (Next Level 3D Look) ─────────────────────
+  Widget _buildMiniActionButton({
+    required IconData icon,
+    required Color iconColor,
+    required Color bgColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: iconColor.withOpacity(0.15), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: iconColor.withOpacity(0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Icon(icon, color: iconColor, size: 16),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // The 3D slab "lift" amount — collapses to 0 when pressed
     final double lift = _isPressed ? 0 : 7;
 
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_)   => setState(() => _isPressed = false),
+      onTapUp: (_) {
+        setState(() => _isPressed = false);
+        widget.onView(); // Card click කලත් sheet එක open වෙනවා
+      },
       onTapCancel: () => setState(() => _isPressed = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 80),
         curve: Curves.easeOut,
         margin: EdgeInsets.only(
           bottom: 24,
-          // When pressed the card sinks — we compensate margin so siblings don't jump
           top: _isPressed ? lift : 0,
         ),
         child: Stack(
           children: [
-            // ── Bottom 3D slab (always visible, gives depth) ──────────────
+            // ── Bottom 3D slab ──────────────────────────────────────────────
             Positioned.fill(
-              top: 7, // fixed slab thickness
+              top: 7,
               child: Container(
                 decoration: BoxDecoration(
                   color: _statusDarkColor,
@@ -102,7 +130,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
               ),
             ),
 
-            // ── Top card that translates down on press ────────────────────
+            // ── Top card ────────────────────────────────────────────────────
             AnimatedContainer(
               duration: const Duration(milliseconds: 80),
               curve: Curves.easeOut,
@@ -111,12 +139,12 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: _statusColor.withOpacity(0.5),
+                  color: _statusColor.withOpacity(0.4),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: _statusColor.withOpacity(0.12),
+                    color: _statusColor.withOpacity(0.1),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -127,7 +155,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // ── Coloured status stripe at top ─────────────────
+                    // Coloured status stripe
                     Container(
                       height: 6,
                       decoration: BoxDecoration(
@@ -137,16 +165,16 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                       ),
                     ),
 
-                    // ── Card body ─────────────────────────────────────
+                    // Card body
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 14, 12, 16),
+                      padding: const EdgeInsets.fromLTRB(16, 16, 12, 16),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Status Icon circle
                           Container(
-                            width: 40,
-                            height: 40,
+                            width: 42,
+                            height: 42,
                             decoration: BoxDecoration(
                               color: _statusLightColor,
                               shape: BoxShape.circle,
@@ -158,7 +186,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                       ? Icons.timelapse_rounded
                                       : Icons.radio_button_unchecked_rounded,
                               color: _statusColor,
-                              size: 22,
+                              size: 24,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -171,7 +199,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                 Text(
                                   widget.task.title,
                                   style: GoogleFonts.outfit(
-                                    fontSize: 15,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: widget.task.isCompleted
                                         ? const Color(0xFFCBD5E1)
@@ -201,7 +229,6 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                 // Badges row
                                 Row(
                                   children: [
-                                    // Status badge
                                     Container(
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 8, vertical: 3),
@@ -221,7 +248,6 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                     ),
                                     const SizedBox(width: 6),
 
-                                    // Priority dot + text
                                     Container(
                                       width: 8,
                                       height: 8,
@@ -241,7 +267,6 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                     ),
                                     const SizedBox(width: 10),
 
-                                    // Assignee
                                     const Icon(Icons.person_outline_rounded,
                                         size: 12, color: Color(0xFF94A3B8)),
                                     const SizedBox(width: 3),
@@ -266,82 +291,84 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                               ],
                             ),
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 8),
 
-                          // Right side controls column
+                          // Right side controls column (Next Level UI Layout)
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              // Edit button
-                              if (widget.onEdit != null)
-                                GestureDetector(
-                                  onTap: widget.onEdit,
-                                  child: Container(
-                                    width: 30,
-                                    height: 30,
-                                    margin: const EdgeInsets.only(bottom: 8),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFE0E7FF),
-                                      borderRadius: BorderRadius.circular(8),
+                              
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  
+                                  _buildMiniActionButton(
+                                    icon: Icons.visibility_rounded,
+                                    iconColor: const Color(0xFF0EA5E9), // Sky blue premium tint
+                                    bgColor: const Color(0xFFE0F2FE),
+                                    onTap: widget.onView,
+                                  ),
+                                  const SizedBox(width: 6),
+
+                                  // EDIT BUTTON
+                                  if (widget.onEdit != null) ...[
+                                    _buildMiniActionButton(
+                                      icon: Icons.edit_rounded,
+                                      iconColor: const Color(0xFF6366F1),
+                                      bgColor: const Color(0xFFEEF2FF),
+                                      onTap: widget.onEdit!,
                                     ),
-                                    child: const Icon(
-                                      Icons.edit_rounded,
-                                      color: Color(0xFF4F46E5),
-                                      size: 16,
+                                    const SizedBox(width: 6),
+                                  ],
+
+                                  // DELETE BUTTON
+                                  if (widget.onDelete != null) ...[
+                                    _buildMiniActionButton(
+                                      icon: Icons.delete_outline_rounded,
+                                      iconColor: const Color(0xFFEF4444),
+                                      bgColor: const Color(0xFFFEE2E2),
+                                      onTap: widget.onDelete!,
                                     ),
-                                  ),
-                                ),
-                                
-                              // Delete button
-                              GestureDetector(
-                                onTap: widget.onDelete,
-                                child: Container(
-                                  width: 30,
-                                  height: 30,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFEE2E2),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.delete_outline_rounded,
-                                    color: Color(0xFFEF4444),
-                                    size: 16,
-                                  ),
-                                ),
+                                  ],
+                                ],
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 16),
 
                               // Status Dropdown
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                      color: const Color(0xFFE2E8F0), width: 1),
-                                ),
-                                child: DropdownButton<String>(
-                                  value: widget.task.status,
-                                  underline: const SizedBox(),
-                                  isDense: true,
-                                  icon: Icon(Icons.unfold_more_rounded,
-                                      color: _statusColor, size: 14),
-                                  dropdownColor: Colors.white,
-                                  style: GoogleFonts.outfit(
-                                    color: _statusColor,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () {},
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                        color: const Color(0xFFE2E8F0), width: 1),
                                   ),
-                                  items: ['Todo', 'In Progress', 'Done']
-                                      .map((s) => DropdownMenuItem(
-                                            value: s,
-                                            child: Text(s),
-                                          ))
-                                      .toList(),
-                                  onChanged: (val) {
-                                    if (val != null) widget.onStatusChange(val);
-                                  },
+                                  child: DropdownButton<String>(
+                                    value: widget.task.status,
+                                    underline: const SizedBox(),
+                                    isDense: true,
+                                    icon: Icon(Icons.unfold_more_rounded,
+                                        color: _statusColor, size: 14),
+                                    dropdownColor: Colors.white,
+                                    style: GoogleFonts.outfit(
+                                      color: _statusColor,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    items: ['Todo', 'In Progress', 'Done']
+                                        .map((s) => DropdownMenuItem(
+                                              value: s,
+                                              child: Text(s),
+                                            ))
+                                        .toList(),
+                                    onChanged: (val) {
+                                      if (val != null) widget.onStatusChange(val);
+                                    },
+                                  ),
                                 ),
                               ),
                             ],

@@ -36,7 +36,7 @@ class TaskController extends StateNotifier<AsyncValue<void>> {
     required String title,
     required String description,
     required String priority,
-    required String assignedTo, // Selected assignee ID
+    required String assignedTo, 
     required int stairIndex,
     required String authorId,
   }) async {
@@ -92,7 +92,7 @@ final taskControllerProvider =
   return TaskController(ref.watch(databaseServiceProvider));
 });
 
-// ─── Comment Providers ───────────────────────────────────────────────────────
+//Comment Providers 
 
 /// Stream of comments for a given taskId
 final commentsStreamProvider =

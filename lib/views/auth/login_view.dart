@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'signup_view.dart';
 import '../home/home_view.dart';
 import '../../providers/auth_provider.dart';
-import '../../core/theme/app_theme.dart';
 import '../../core/utils/notifications.dart';
 
 class LoginView extends ConsumerStatefulWidget {
@@ -42,28 +41,72 @@ class _LoginViewState extends ConsumerState<LoginView> with SingleTickerProvider
   }
 
   Future<void> _submit() async {
-    if (_formKey.currentState!.validate()) {
-      final authController = ref.read(authControllerProvider.notifier);
-      await authController.login(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
+  if (_formKey.currentState!.validate()) {
+    final authController = ref.read(authControllerProvider.notifier);
+    await authController.login(
+      _emailController.text.trim(),
+      _passwordController.text,
+    );
 
-      final authState = ref.read(authControllerProvider);
-      if (authState.hasError) {
-        if (!mounted) return;
-        AppNotifications.showError(context, authState.error.toString());
-      } else if (authState.value != null) {
-        if (!mounted) return;
-        AppNotifications.showSuccess(context, 'Successfully signed in! Welcome back!');
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeView()),
-          (route) => false,
-        );
-      }
+    final authState = ref.read(authControllerProvider);
+    if (authState.hasError) {
+      if (!mounted) return;
+      // 🌟 Methana api hadapu helper method eka apply kala
+      final friendlyMsg = _getFriendlyErrorMessage(authState.error);
+      AppNotifications.showError(context, friendlyMsg);
+    } else if (authState.value != null) {
+      if (!mounted) return;
+      AppNotifications.showSuccess(context, 'Successfully signed in! Welcome back!');
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeView()),
+        (route) => false,
+      );
     }
   }
+}
+
+  Future<void> _submitGoogle() async {
+  final authController = ref.read(authControllerProvider.notifier);
+  await authController.signInWithGoogle();
+
+  final authState = ref.read(authControllerProvider);
+  if (authState.hasError) {
+    if (!mounted) return;
+    
+    final friendlyMsg = _getFriendlyErrorMessage(authState.error);
+    AppNotifications.showError(context, friendlyMsg);
+  } else if (authState.value != null) {
+    if (!mounted) return;
+    AppNotifications.showSuccess(context, 'Successfully signed in with Google!');
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const HomeView()),
+      (route) => false,
+    );
+  }
+}
+  String _getFriendlyErrorMessage(dynamic error) {
+  final errorStr = error.toString().toLowerCase();
+
+  if (errorStr.contains('user-not-found') || errorStr.contains('invalid-credential')) {
+    return 'Incorrect email or password. Please try again.';
+  } else if (errorStr.contains('wrong-password')) {
+    return 'The password you entered is incorrect.';
+  } else if (errorStr.contains('email-already-in-use')) {
+    return 'This email is already registered. Try logging in instead.';
+  } else if (errorStr.contains('network-request-failed') || errorStr.contains('network_error')) {
+    return 'Network error! Please check your internet connection and try again.';
+  } else if (errorStr.contains('user-disabled')) {
+    return 'This account has been disabled. Contact support for help.';
+  } else if (errorStr.contains('too-many-requests')) {
+    return 'Too many failed attempts. Please try again later.';
+  } else if (errorStr.contains('operation-not-allowed')) {
+    return 'Sign in method is not enabled. Please contact support.';
+  }
+  
+  return 'Something went wrong. Please try again.';
+}
 
   Widget _buildGlassTextField({
     required TextEditingController controller,
@@ -133,15 +176,14 @@ class _LoginViewState extends ConsumerState<LoginView> with SingleTickerProvider
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFFF8FAFC), // Slate 50
-                  Color(0xFFEEF2F6), // Light grey
-                  Color(0xFFE0E7FF), // Indigo 50
+                  Color(0xFFF8FAFC), 
+                  Color(0xFFEEF2F6), 
+                  Color(0xFFE0E7FF), 
                 ],
               ),
             ),
           ),
           
-          // Ambient neon glows (soft pastels)
           Positioned(
             top: -150,
             left: -150,
@@ -371,6 +413,72 @@ class _LoginViewState extends ConsumerState<LoginView> with SingleTickerProvider
                                 ),
                         ),
                       ),
+                      const SizedBox(height: 24),
+                      
+                      // OR Divider
+                      Row(
+                        children: [
+                          Expanded(child: Divider(color: const Color(0xFFCBD5E1), thickness: 1)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              'OR',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF64748B),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          Expanded(child: Divider(color: const Color(0xFFCBD5E1), thickness: 1)),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Google Sign-In Button
+                      Container(
+                        width: double.infinity,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF0F172A).withOpacity(0.04),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          onPressed: isLoading ? null : _submitGoogle,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.g_mobiledata, size: 28, color: const Color(0xFF1E293B)),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Continue with Google',
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1E293B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      
                       const SizedBox(height: 32),
                       
                       // Bottom navigation link

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
-import '../../models/user_model.dart';
 import '../../models/comment_model.dart';
 import '../../providers/task_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -79,13 +78,6 @@ class _TaskDetailViewState extends ConsumerState<TaskDetailView>
     }
   }
 
-  Color _statusLight(String s) {
-    switch (s) {
-      case 'Done':        return const Color(0xFFD1FAE5);
-      case 'In Progress': return const Color(0xFFFEF3C7);
-      default:            return const Color(0xFFDBEAFE);
-    }
-  }
 
   Color _priorityColor(String p) {
     switch (p) {

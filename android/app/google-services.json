@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "1068178440689-ro0bb56r3kciofcc2prh9ifmj2d86805.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.magadige_to_do",
+            "certificate_hash": "c56c9a56f116859b59371f4ee67d17e1c7f92966"
+          }
+        },
+        {
           "client_id": "1068178440689-f6g0islai9j5ihinlukqkdu8boi809du.apps.googleusercontent.com",
           "client_type": 3
         }
