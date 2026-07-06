@@ -37,9 +37,6 @@ class _ZigZagTaskListState extends State<ZigZagTaskList> {
       );
     }
 
-    // Sort tasks: Done -> In Progress -> Todo
-    // This way, Done is at the start of the list. 
-    // Since we reverse the rendering order to build from bottom up, Done will be at the bottom!
     final sortedTasks = List<TaskModel>.from(widget.tasks)..sort((a, b) {
       int getScore(String status) {
         if (status == 'Done') return 0;
@@ -48,12 +45,7 @@ class _ZigZagTaskListState extends State<ZigZagTaskList> {
       }
       return getScore(a.status).compareTo(getScore(b.status));
     });
-
-    // Find the total number of done tasks to place the avatar
     final doneCount = sortedTasks.where((t) => t.status == 'Done').length;
-
-    // We render items from top of screen to bottom.
-    // Index 0 in the column is the top. So we reverse the list.
     final List<Widget> listItems = [];
 
     // The Goal Flag at the very top
@@ -89,14 +81,9 @@ class _ZigZagTaskListState extends State<ZigZagTaskList> {
       ),
     );
 
-    // Build the stairs from top (highest index) down to bottom (0)
     for (int reversedIndex = sortedTasks.length - 1; reversedIndex >= 0; reversedIndex--) {
       final task = sortedTasks[reversedIndex];
-      
-      // If this is the boundary exactly after the last 'Done' task, insert the Avatar!
-      // (If doneCount == 0, the avatar goes at the very bottom, after all tasks. We handle that at the end)
       if (doneCount > 0 && reversedIndex == doneCount - 1) {
-        // Place avatar ON TOP of the highest done task
         final double leftMargin = (reversedIndex % 5) * 30.0;
         final double rightMargin = 40.0 - ((reversedIndex % 5) * 10.0);
         
@@ -106,7 +93,7 @@ class _ZigZagTaskListState extends State<ZigZagTaskList> {
             curve: Curves.easeOutBack,
             margin: EdgeInsets.only(
               bottom: 8,
-              left: leftMargin + 32, // Offset to stand on the card
+              left: leftMargin + 32, 
               right: rightMargin,
             ),
             alignment: Alignment.centerLeft,
@@ -149,7 +136,7 @@ class _ZigZagTaskListState extends State<ZigZagTaskList> {
             return Transform.translate(
               offset: Offset(0, 50 * (1 - value)),
               child: Opacity(
-                opacity: value.clamp(0.0, 1.0), // FIXED: Clamp opacity to avoid AssertionError
+                opacity: value.clamp(0.0, 1.0), 
                 child: child,
               ),
             );
@@ -194,7 +181,6 @@ class _ZigZagTaskListState extends State<ZigZagTaskList> {
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
                   children: [
-                    // Task Number
                     Container(
                       width: 32,
                       height: 32,

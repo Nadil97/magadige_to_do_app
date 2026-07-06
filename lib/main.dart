@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/auth_provider.dart';
-import 'views/auth/login_view.dart';
 import 'views/auth/landing_view.dart';
 import 'views/splash/splash_view.dart';
 import 'views/home/home_view.dart';

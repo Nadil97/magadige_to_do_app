@@ -7,7 +7,6 @@ class AuthService {
   final firebase_auth.FirebaseAuth _auth = firebase_auth.FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Stream of auth changes
   Stream<UserModel?> get authStateChanges {
     return _auth.authStateChanges().asyncMap((firebaseUser) async {
       if (firebaseUser == null) return null;
@@ -127,7 +126,7 @@ class AuthService {
     if (user == null || user.email == null) {
       throw Exception('No authenticated user found.');
     }
-    // Re-authenticate first
+    
     final credential = firebase_auth.EmailAuthProvider.credential(
       email: user.email!,
       password: currentPassword,
@@ -142,8 +141,6 @@ class AuthService {
   }
 
   UserModel? get currentUser {
-    // Current user getter is not synchronous with Firestore, 
-    // it's better to rely on providers for the current user state
     return null;
   }
 }

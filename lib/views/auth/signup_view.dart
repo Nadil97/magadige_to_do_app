@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'login_view.dart';
 import '../home/home_view.dart';
 import '../../providers/auth_provider.dart';
-import '../../core/theme/app_theme.dart';
 import '../../core/utils/notifications.dart';
 
 class SignupView extends ConsumerStatefulWidget {
@@ -43,7 +42,7 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
     super.dispose();
   }
 
-  // 🌟 Firebase Auth Errors Cleanly Formatting For Users
+  // Firebase Auth Errors Cleanly Formatting For Users
   String _getFriendlyErrorMessage(dynamic error) {
     final errorStr = error.toString().toLowerCase();
 
@@ -168,7 +167,6 @@ class _SignupViewState extends ConsumerState<SignupView> with SingleTickerProvid
       backgroundColor: const Color(0xFFF8FAFC),
       body: Stack(
         children: [
-          // Background rich gradient with ambient glows
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(

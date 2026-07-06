@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'login_view.dart';
 import 'signup_view.dart';
-import '../../core/theme/app_theme.dart';
 
 class LandingView extends StatefulWidget {
   const LandingView({super.key});
@@ -53,25 +52,23 @@ class _LandingViewState extends State<LandingView> with TickerProviderStateMixin
     final size = MediaQuery.of(context).size;
     
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // Light Slate Background
+      backgroundColor: const Color(0xFFF8FAFC), 
       body: Stack(
         children: [
-          // Background subtle light gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFFF8FAFC), // Slate 50
-                  Color(0xFFEEF2F6), // Light grey
-                  Color(0xFFE0E7FF), // Indigo 50
+                  Color(0xFFF8FAFC), 
+                  Color(0xFFEEF2F6), 
+                  Color(0xFFE0E7FF), 
                 ],
               ),
             ),
           ),
           
-          // Glowing Ambient circles in the background (Soft pastels for light mode)
           Positioned(
             top: -100,
             right: -100,
@@ -99,7 +96,7 @@ class _LandingViewState extends State<LandingView> with TickerProviderStateMixin
             ),
           ),
 
-          // Custom Painter for abstract road path lines (Light mode color)
+          
           Positioned.fill(
             child: CustomPaint(
               painter: GridRoadPainter(),
@@ -248,7 +245,7 @@ class _LandingViewState extends State<LandingView> with TickerProviderStateMixin
 
                       const SizedBox(height: 30),
 
-                      // Text Content (Catchy taglines)
+                      // Text Content 
                       Column(
                         children: [
                           Text(
@@ -279,7 +276,7 @@ class _LandingViewState extends State<LandingView> with TickerProviderStateMixin
 
                       const SizedBox(height: 40),
 
-                      // Buttons / Actions
+                      
                       Column(
                         children: [
                           // Sign Up (Primary Glow Button)
@@ -390,7 +387,7 @@ class _LandingViewState extends State<LandingView> with TickerProviderStateMixin
   }
 }
 
-// Background painter representing abstract milestones/staircases
+// milestones/staircases
 class GridRoadPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

@@ -22,7 +22,7 @@ class AppNotifications {
             ),
           ],
         ),
-        backgroundColor: const Color(0xFF10B981), // Emerald green
+        backgroundColor: const Color(0xFF10B981), 
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         margin: const EdgeInsets.all(16),
@@ -51,7 +51,7 @@ class AppNotifications {
             ),
           ],
         ),
-        backgroundColor: const Color(0xFFEF4444), // Crimson red
+        backgroundColor: const Color(0xFFEF4444), 
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         margin: const EdgeInsets.all(16),

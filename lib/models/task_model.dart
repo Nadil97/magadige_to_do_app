@@ -4,7 +4,7 @@ class TaskModel {
   final String description;
   final String status; // 'Todo', 'In Progress', 'Done' internally
   final String authorId;
-  final List<String> assignedTo; // List of user IDs
+  final List<String> assignedTo; 
   final DateTime createdAt;
   final DateTime updatedAt;
   final int stairIndex;

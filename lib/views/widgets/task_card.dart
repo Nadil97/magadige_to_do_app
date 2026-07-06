@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
-import '../../core/theme/app_theme.dart';
 import '../../providers/task_provider.dart';
 
 class TaskCard extends StatefulWidget {
@@ -298,11 +297,11 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              // 🌟 Row structure ekakata action buttons damma smooth look ekata
+                              
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  // 👁️ NEW EYE/VIEW BUTTON (Premium Glassmorphic Style)
+                                  
                                   _buildMiniActionButton(
                                     icon: Icons.visibility_rounded,
                                     iconColor: const Color(0xFF0EA5E9), // Sky blue premium tint
