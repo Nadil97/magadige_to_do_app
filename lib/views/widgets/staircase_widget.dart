@@ -79,9 +79,7 @@ class _StaircaseWidgetState extends State<StaircaseWidget> with SingleTickerProv
         // Base configurations for 3D steps drawing
         final double stepWidth = 90.0;
         final double stepHeight = 35.0;
-        final double stepDepth = 25.0; // Isometric offset
-
-        // Starting point: Bottom Left
+        final double stepDepth = 25.0; 
         final double startX = 40.0;
         final double startY = height - 60.0;
 

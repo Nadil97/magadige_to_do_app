@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
-import '../auth/landing_view.dart';
 import '../../providers/task_provider.dart';
 import '../../core/utils/notifications.dart';
 import '../../models/task_model.dart';
@@ -205,7 +204,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     height: 18,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE0E5EC), // Neumorphic grey base
+                      color: const Color(0xFFE0E5EC), 
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: Colors.white, width: 1.5),
                       boxShadow: const [
@@ -355,8 +354,6 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   final task = list[index];
                   final authUser = ref.watch(authStateProvider).value;
                   final isAuthor = authUser?.uid == task.authorId;
-
-                  // 🌟 REMOVED: Wate thibba GestureDetector eka ain kala, kelinma TaskCard eka return කරනවා
                   return TaskCard(
                     task: task,
                     onEdit: isAuthor ? () {
@@ -386,7 +383,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                         }
                       }
                     } : null,
-                    // 🌟 ADDED: Aluth onView parameter eka methanadi pass kala
+                
                     onView: () {
                       _showTaskDetailsBottomSheet(
                         context,
@@ -439,7 +436,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
           ),
           child: SafeArea(
             child: Padding(
-              // Padding eka bottom ekata 'mediaQuery viewInsets' damma coding scene ekedi keyboard eka up unama content eka push wenna
+              
               padding: EdgeInsets.fromLTRB(
                 24,
                 16,
@@ -447,9 +444,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 24 + MediaQuery.of(context).viewInsets.bottom,
               ),
               child: SingleChildScrollView(
-                // Meka thama scroll eka denne
+                
                 physics:
-                    const BouncingScrollPhysics(), // Premium smooth look ekak enna
+                    const BouncingScrollPhysics(), 
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -732,7 +729,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 );
                 
                 if (text.isNotEmpty) {
-                  // Use authStateProvider which holds the active user stream
+                  
                   final authUser = ref.read(authStateProvider).value;
                   if (authUser != null) {
                     await ref.read(commentControllerProvider.notifier).addComment(
@@ -746,9 +743,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 await controller.updateStatus(task.id, 'Done');
                 
                 if (context.mounted) {
-                  Navigator.pop(dialogContext); // Close loading indicator
-                  Navigator.pop(dialogContext); // Close comment dialog
-                  Navigator.pop(context); // Close bottom sheet
+                  Navigator.pop(dialogContext); 
+                  Navigator.pop(dialogContext); 
+                  Navigator.pop(context); 
                 }
               },
               child: const Text('Mark as Done'),

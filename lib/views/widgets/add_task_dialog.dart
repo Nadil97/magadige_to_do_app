@@ -3,9 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/task_provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../core/theme/app_theme.dart';
 import '../../models/task_model.dart';
-import '../../models/user_model.dart';
 import '../../core/utils/notifications.dart';
 
 class AddTaskDialog extends ConsumerStatefulWidget {
@@ -323,25 +321,7 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                                     }
                                   }
                                   return DropdownButtonFormField<String>(
-                                    // value: _selectedAssigneeId.isEmpty ? null : _selectedAssigneeId,
-                                    // decoration: const InputDecoration(
-                                    //   prefixIcon: Icon(Icons.person_outline_rounded, color: Color(0xFF10B981), size: 18),
-                                    //   border: InputBorder.none,
-                                    //   contentPadding: EdgeInsets.only(right: 12),
-                                    // ),
-                                    // style: GoogleFonts.outfit(
-                                    //   color: const Color(0xFF1E293B),
-                                    //   fontWeight: FontWeight.bold,
-                                    //   fontSize: 13,
-                                    // ),
-                                    // dropdownColor: Colors.white,
-                                    // icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
-                                    // items: list.map((user) {
-                                    //   return DropdownMenuItem(value: user.uid, child: Text(user.name));
-                                    // }).toList(),
-                                    // onChanged: (val) {
-                                    //   if (val != null) setState(() => _selectedAssigneeId = val);
-                                    // },
+                                   
                                     value: _selectedAssigneeId.isEmpty
                                         ? null
                                         : _selectedAssigneeId,

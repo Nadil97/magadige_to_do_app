@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'signup_view.dart';
 import '../home/home_view.dart';
 import '../../providers/auth_provider.dart';
-import '../../core/theme/app_theme.dart';
 import '../../core/utils/notifications.dart';
 
 class LoginView extends ConsumerStatefulWidget {
@@ -41,30 +40,6 @@ class _LoginViewState extends ConsumerState<LoginView> with SingleTickerProvider
     super.dispose();
   }
 
-  // Future<void> _submit() async {
-  //   if (_formKey.currentState!.validate()) {
-  //     final authController = ref.read(authControllerProvider.notifier);
-  //     await authController.login(
-  //       _emailController.text.trim(),
-  //       _passwordController.text,
-  //     );
-
-  //     final authState = ref.read(authControllerProvider);
-  //     if (authState.hasError) {
-  //       if (!mounted) return;
-  //       AppNotifications.showError(context, authState.error.toString());
-  //     } else if (authState.value != null) {
-  //       if (!mounted) return;
-  //       AppNotifications.showSuccess(context, 'Successfully signed in! Welcome back!');
-  //       Navigator.pushAndRemoveUntil(
-  //         context,
-  //         MaterialPageRoute(builder: (context) => const HomeView()),
-  //         (route) => false,
-  //       );
-  //     }
-  //   }
-  // }
-
   Future<void> _submit() async {
   if (_formKey.currentState!.validate()) {
     final authController = ref.read(authControllerProvider.notifier);
@@ -90,25 +65,6 @@ class _LoginViewState extends ConsumerState<LoginView> with SingleTickerProvider
     }
   }
 }
-
-  // Future<void> _submitGoogle() async {
-  //   final authController = ref.read(authControllerProvider.notifier);
-  //   await authController.signInWithGoogle();
-
-  //   final authState = ref.read(authControllerProvider);
-  //   if (authState.hasError) {
-  //     if (!mounted) return;
-  //     AppNotifications.showError(context, authState.error.toString());
-  //   } else if (authState.value != null) {
-  //     if (!mounted) return;
-  //     AppNotifications.showSuccess(context, 'Successfully signed in with Google!');
-  //     Navigator.pushAndRemoveUntil(
-  //       context,
-  //       MaterialPageRoute(builder: (context) => const HomeView()),
-  //       (route) => false,
-  //     );
-  //   }
-  // }
 
   Future<void> _submitGoogle() async {
   final authController = ref.read(authControllerProvider.notifier);
@@ -220,15 +176,14 @@ class _LoginViewState extends ConsumerState<LoginView> with SingleTickerProvider
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFFF8FAFC), // Slate 50
-                  Color(0xFFEEF2F6), // Light grey
-                  Color(0xFFE0E7FF), // Indigo 50
+                  Color(0xFFF8FAFC), 
+                  Color(0xFFEEF2F6), 
+                  Color(0xFFE0E7FF), 
                 ],
               ),
             ),
           ),
           
-          // Ambient neon glows (soft pastels)
           Positioned(
             top: -150,
             left: -150,

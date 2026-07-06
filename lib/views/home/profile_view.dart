@@ -9,12 +9,12 @@ import '../../services/database_service.dart';
 import '../../core/utils/notifications.dart';
 import '../auth/landing_view.dart';
 
-// ─── User profile stream provider ────────────────────────────────────────────
+// User profile stream provider
 final userProfileProvider = StreamProvider<UserModel?>((ref) {
   return ref.watch(authServiceProvider).authStateChanges;
 });
 
-// ─── ProfileView ─────────────────────────────────────────────────────────────
+// ProfileView 
 
 class ProfileView extends ConsumerStatefulWidget {
   const ProfileView({super.key});

@@ -38,7 +38,6 @@ class _SplashViewState extends State<SplashView> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    // ── Master Entrance (0.0 → 1.0 over 2800ms) ──
     _masterController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2800),
@@ -213,10 +212,10 @@ class _SplashViewState extends State<SplashView> with TickerProviderStateMixin {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF0A1628), // Deep navy
-              Color(0xFF0F2345), // Rich dark blue
-              Color(0xFF162D56), // Mid blue
-              Color(0xFF1A3A6B), // Brighter blue base
+              Color(0xFF0A1628), 
+              Color(0xFF0F2345), 
+              Color(0xFF162D56), 
+              Color(0xFF1A3A6B), 
             ],
             stops: [0.0, 0.35, 0.7, 1.0],
           ),
@@ -504,9 +503,6 @@ class _SplashViewState extends State<SplashView> with TickerProviderStateMixin {
   }
 }
 
-// ════════════════════════════════════════════════════════════
-//  CUSTOM PAINTERS
-// ════════════════════════════════════════════════════════════
 
 /// Subtle grid lines on the background
 class _GridLinePainter extends CustomPainter {
