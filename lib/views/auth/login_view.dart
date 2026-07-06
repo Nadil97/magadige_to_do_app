@@ -41,41 +41,47 @@ class _LoginViewState extends ConsumerState<LoginView> with SingleTickerProvider
     super.dispose();
   }
 
+  // Future<void> _submit() async {
+  //   if (_formKey.currentState!.validate()) {
+  //     final authController = ref.read(authControllerProvider.notifier);
+  //     await authController.login(
+  //       _emailController.text.trim(),
+  //       _passwordController.text,
+  //     );
+
+  //     final authState = ref.read(authControllerProvider);
+  //     if (authState.hasError) {
+  //       if (!mounted) return;
+  //       AppNotifications.showError(context, authState.error.toString());
+  //     } else if (authState.value != null) {
+  //       if (!mounted) return;
+  //       AppNotifications.showSuccess(context, 'Successfully signed in! Welcome back!');
+  //       Navigator.pushAndRemoveUntil(
+  //         context,
+  //         MaterialPageRoute(builder: (context) => const HomeView()),
+  //         (route) => false,
+  //       );
+  //     }
+  //   }
+  // }
+
   Future<void> _submit() async {
-    if (_formKey.currentState!.validate()) {
-      final authController = ref.read(authControllerProvider.notifier);
-      await authController.login(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
-
-      final authState = ref.read(authControllerProvider);
-      if (authState.hasError) {
-        if (!mounted) return;
-        AppNotifications.showError(context, authState.error.toString());
-      } else if (authState.value != null) {
-        if (!mounted) return;
-        AppNotifications.showSuccess(context, 'Successfully signed in! Welcome back!');
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeView()),
-          (route) => false,
-        );
-      }
-    }
-  }
-
-  Future<void> _submitGoogle() async {
+  if (_formKey.currentState!.validate()) {
     final authController = ref.read(authControllerProvider.notifier);
-    await authController.signInWithGoogle();
+    await authController.login(
+      _emailController.text.trim(),
+      _passwordController.text,
+    );
 
     final authState = ref.read(authControllerProvider);
     if (authState.hasError) {
       if (!mounted) return;
-      AppNotifications.showError(context, authState.error.toString());
+      // 🌟 Methana api hadapu helper method eka apply kala
+      final friendlyMsg = _getFriendlyErrorMessage(authState.error);
+      AppNotifications.showError(context, friendlyMsg);
     } else if (authState.value != null) {
       if (!mounted) return;
-      AppNotifications.showSuccess(context, 'Successfully signed in with Google!');
+      AppNotifications.showSuccess(context, 'Successfully signed in! Welcome back!');
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomeView()),
@@ -83,6 +89,68 @@ class _LoginViewState extends ConsumerState<LoginView> with SingleTickerProvider
       );
     }
   }
+}
+
+  // Future<void> _submitGoogle() async {
+  //   final authController = ref.read(authControllerProvider.notifier);
+  //   await authController.signInWithGoogle();
+
+  //   final authState = ref.read(authControllerProvider);
+  //   if (authState.hasError) {
+  //     if (!mounted) return;
+  //     AppNotifications.showError(context, authState.error.toString());
+  //   } else if (authState.value != null) {
+  //     if (!mounted) return;
+  //     AppNotifications.showSuccess(context, 'Successfully signed in with Google!');
+  //     Navigator.pushAndRemoveUntil(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => const HomeView()),
+  //       (route) => false,
+  //     );
+  //   }
+  // }
+
+  Future<void> _submitGoogle() async {
+  final authController = ref.read(authControllerProvider.notifier);
+  await authController.signInWithGoogle();
+
+  final authState = ref.read(authControllerProvider);
+  if (authState.hasError) {
+    if (!mounted) return;
+    
+    final friendlyMsg = _getFriendlyErrorMessage(authState.error);
+    AppNotifications.showError(context, friendlyMsg);
+  } else if (authState.value != null) {
+    if (!mounted) return;
+    AppNotifications.showSuccess(context, 'Successfully signed in with Google!');
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const HomeView()),
+      (route) => false,
+    );
+  }
+}
+  String _getFriendlyErrorMessage(dynamic error) {
+  final errorStr = error.toString().toLowerCase();
+
+  if (errorStr.contains('user-not-found') || errorStr.contains('invalid-credential')) {
+    return 'Incorrect email or password. Please try again.';
+  } else if (errorStr.contains('wrong-password')) {
+    return 'The password you entered is incorrect.';
+  } else if (errorStr.contains('email-already-in-use')) {
+    return 'This email is already registered. Try logging in instead.';
+  } else if (errorStr.contains('network-request-failed') || errorStr.contains('network_error')) {
+    return 'Network error! Please check your internet connection and try again.';
+  } else if (errorStr.contains('user-disabled')) {
+    return 'This account has been disabled. Contact support for help.';
+  } else if (errorStr.contains('too-many-requests')) {
+    return 'Too many failed attempts. Please try again later.';
+  } else if (errorStr.contains('operation-not-allowed')) {
+    return 'Sign in method is not enabled. Please contact support.';
+  }
+  
+  return 'Something went wrong. Please try again.';
+}
 
   Widget _buildGlassTextField({
     required TextEditingController controller,

@@ -10,7 +10,12 @@ class DatabaseService {
   Stream<List<TaskModel>> getTasks(String userId) {
     return _firestore
         .collection('tasks')
-        .where('assignedTo', arrayContains: userId)
+        .where(
+          Filter.or(
+            Filter('assignedTo', arrayContains: userId),
+            Filter('authorId', isEqualTo: userId),
+          ),
+        )
         .snapshots()
         .map((snapshot) {
           return snapshot.docs

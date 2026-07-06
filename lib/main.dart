@@ -6,6 +6,7 @@ import 'core/theme/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'views/auth/login_view.dart';
 import 'views/auth/landing_view.dart';
+import 'views/splash/splash_view.dart';
 import 'views/home/home_view.dart';
 
 void main() async {
@@ -39,7 +40,7 @@ class MyApp extends StatelessWidget {
       title: 'Magadige To-Do',
       theme: AppTheme.darkTheme,
       debugShowCheckedModeBanner: false,
-      home: const AuthGate(),
+      home: const SplashWrapper(),
     );
   }
 }
@@ -70,6 +71,17 @@ class AuthGate extends ConsumerWidget {
           child: Text('Initialization Error: $err'),
         ),
       ),
+    );
+  }
+}
+
+class SplashWrapper extends StatelessWidget {
+  const SplashWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const SplashView(
+      nextScreen: AuthGate(),
     );
   }
 }
